@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector 7 - DECEASED</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #8b8b8b;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Blue tint for Sector 7 */
+        .sector-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(0,100,150,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sector-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .sector-number {
+            font-family: 'VT323', monospace;
+            font-size: 6em;
+            color: #006699;
+            text-transform: uppercase;
+            letter-spacing: 20px;
+            text-shadow: 0 0 30px rgba(0,102,153,0.5);
+            animation: pulse-blue 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-blue {
+            0%, 100% { text-shadow: 0 0 30px rgba(0,102,153,0.5); opacity: 1; }
+            50% { text-shadow: 0 0 50px rgba(0,102,153,0.8); opacity: 0.8; }
+        }
+
+        .sector-status {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5em;
+            color: #006699;
+            letter-spacing: 10px;
+            margin-top: 10px;
+        }
+
+        .data-panel {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid #333;
+            border-left: 3px solid #006699;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .data-panel h3 {
+            font-family: 'VT323', monospace;
+            color: #666;
+            font-size: 1.4em;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.95em;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .data-value {
+            color: #888;
+        }
+
+        .data-value.critical {
+            color: #006699;
+        }
+
+        .log-entry {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 2px solid #006699;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .log-timestamp {
+            color: #006699;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: rgba(0, 102, 153, 0.1);
+            border: 1px solid #006699;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .warning-box p {
+            color: #006699;
+            font-size: 1.1em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .subject-info {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .subject-avatar {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #006699;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            background: rgba(0, 102, 153, 0.1);
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            color: #666;
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 15px 40px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #006699;
+            border-color: #006699;
+            background: rgba(0, 102, 153, 0.1);
+        }
+
+        .center-link {
+            display: block;
+            text-align: center;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: rgba(0, 102, 153, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #006699;
+        }
+
+        .timeline-event {
+            position: relative;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 3px solid #006699;
+        }
+
+        .timeline-event::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            background: #006699;
+            border-radius: 50%;
+        }
+
+        .timeline-time {
+            color: #006699;
+            font-size: 0.8em;
+            margin-bottom: 8px;
+        }
+
+        .corruption-box {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #006699;
+            padding: 20px;
+            margin: 30px 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8em;
+            color: #006699;
+            overflow: hidden;
+        }
+
+        .corrupted-text {
+            animation: corrupt 0.5s infinite;
+        }
+
+        @keyframes corrupt {
+            0%, 100% { opacity: 1; transform: translate(0, 0); }
+            25% { opacity: 0.8; transform: translate(1px, 1px); }
+            50% { opacity: 0.6; transform: translate(-1px, -1px); }
+            75% { opacity: 0.8; transform: translate(1px, -1px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="sector-overlay"></div>
+
+    <div class="container">
+        <div class="sector-header">
+            <h1 class="sector-number">SECTOR 7</h1>
+            <div class="sector-status">⚠ DECEASED ⚠</div>
+        </div>
+
+        <div class="subject-info">
+            <div class="subject-avatar">🟦</div>
+            <h2 style="font-family: 'VT323'; color: #666; letter-spacing: 5px; font-size: 2em;">SUBJECT S14</h2>
+        </div>
+
+        <div class="data-panel">
+            <h3>Sector Data</h3>
+            <div class="data-row">
+                <span class="data-label">Access Code:</span>
+                <span class="data-value">7X-9942-DELTA</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Status:</span>
+                <span class="data-value critical">CRITICAL</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Last Contact:</span>
+                <span class="data-value">168 hours ago</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Recovery Team:</span>
+                <span class="data-value critical">CASUALTIES</span>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <p>⚠ Temporal Anomalies Detected ⚠</p>
+            <p style="font-size: 0.8em; margin-top: 10px; color: #666;">Time distortion field active - Chrono-shielding mandatory</p>
+        </div>
+
+        <div class="data-panel">
+            <h3>Incident Timeline</h3>
+            <div class="timeline">
+                <div class="timeline-event">
+                    <div class="timeline-time">T+0 hours</div>
+                    Subject S14, the strongest of the group, enters Sector 7 for routine survey.
+                    Physical assessment: PEAK CONDITION. "Nothing in there can take me down." - S14
+                </div>
+                <div class="timeline-event">
+                    <div class="timeline-time">T+12 hours</div>
+                    Subject reports "strange echoes" but remains confident. Audio log: 
+                    "Whatever's in here, I can handle it. I've faced worse than this."
+                </div>
+                <div class="timeline-event">
+                    <div class="timeline-time">T+24 hours</div>
+                    Subject's strength begins to fail. Psychological note: "First signs of temporal 
+                    degradation. Physical prowess offers no protection." Subject claims to have seen 
+                    "himself from yesterday."
+                </div>
+                <div class="timeline-event">
+                    <div class="timeline-time">T+48 hours</div>
+                    <span class="critical">CRITICAL:</span> Subject S14 unresponsive. Recovery team Gamma-9 deployed.
+                    Final log: "My strength... it means nothing here. Time doesn't care how strong you are."
+                </div>
+                <div class="timeline-event">
+                    <div class="timeline-time">T+72 hours</div>
+                    Recovery team Gamma-9 status: LOST. Final transmission received: "He's everywhere. All the versions. They're all—"
+                    [Transmission ends. The strongest had fallen.]
+                </div>
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>Corrupted Data Fragment</h3>
+            <div class="corruption-box">
+                <p class="corrupted-text">SUBJECT LOG - DAY [REDACTED]</p>
+                <p class="corrupted-text">I saw [DATA CORRUPTED] today. It/they spoke to me in</p>
+                <p class="corrupted-text">[TEMPORAL SIGNATURE DETECTED]</p>
+                <p class="corrupted-text">...there are so many versions of what happened...</p>
+                <p class="corrupted-text">...which one is real?...</p>
+                <p class="corrupted-text">...I can't remember which [CORRUPTED] I'm supposed to be...</p>
+                <p style="color: #666; margin-top: 15px;">[TRANSMISSION TERMINATED - SIGNAL LOST]</p>
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>Environmental Scan</h3>
+            <div class="data-row">
+                <span class="data-label">Temperature:</span>
+                <span class="data-value">Fluctuating (-20°C to 45°C)</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Radiation:</span>
+                <span class="data-value critical">TEMPORAL SPIKES</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Atmosphere:</span>
+                <span class="data-value critical">UNSTABLE</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Temporal Integrity:</span>
+                <span class="data-value critical">BREACHED</span>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/you-are-not-alone" class="back-link center-link">← Return to Transmission Hub</a>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animation = `float ${Math.random() * 5 + 5}s linear infinite`;
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Add float animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        createParticles();
+
+        // Random glitch effect
+        setInterval(() => {
+            const header = document.querySelector('.sector-number');
+            header.style.textShadow = `${Math.random() * 10 - 5}px ${Math.random() * 10 - 5}px 30px rgba(0,102,153,0.8)`;
+            setTimeout(() => {
+                header.style.textShadow = '0 0 30px rgba(0,102,153,0.5)';
+            }, 100);
+        }, 3000);
+
+        // Random time distortion effect
+        setInterval(() => {
+            const timeline = document.querySelector('.timeline');
+            timeline.style.transform = `translateX(${Math.random() * 4 - 2}px)`;
+            setTimeout(() => {
+                timeline.style.transform = 'translateX(0)';
+            }, 100);
+        }, 2000);
+    </script>
+</body>
+</html>

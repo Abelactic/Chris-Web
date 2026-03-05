@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOU ARE NOT ALONE</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #b8b8b8;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        /* Screen flicker */
+        @keyframes screen-flicker {
+            0%, 100% { opacity: 1; }
+            92% { opacity: 1; }
+            93% { opacity: 0.85; }
+            94% { opacity: 1; }
+            95% { opacity: 0.95; }
+            96% { opacity: 1; }
+        }
+
+        .screen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(180, 190, 180, 0.03);
+            pointer-events: none;
+            z-index: 997;
+            animation: screen-flicker 0.15s infinite;
+        }
+
+        /* Tracking line */
+        .tracking-line {
+            position: fixed;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.04);
+            animation: tracking-scroll 6s linear infinite;
+            pointer-events: none;
+            z-index: 996;
+        }
+
+        @keyframes tracking-scroll {
+            0% { top: -5%; }
+            100% { top: 105%; }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            position: relative;
+            z-index: 10;
+            text-align: center;
+        }
+
+        /* Main warning text */
+        .warning-text {
+            font-family: 'VT323', monospace;
+            font-size: 4em;
+            color: #c9c9c9;
+            text-transform: uppercase;
+            letter-spacing: 15px;
+            margin: 40px 0;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .glitch {
+            animation: text-glitch 3s infinite;
+        }
+
+        .glitch-text {
+            animation: text-glitch 2.5s infinite;
+            color: #999;
+        }
+
+        @keyframes text-glitch {
+            0%, 100% { 
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+                transform: translate(0, 0);
+            }
+            2% {
+                text-shadow: 3px 0 rgba(255, 0, 0, 0.4), -3px 0 rgba(0, 255, 255, 0.4);
+                transform: translate(-2px, 1px);
+            }
+            4% {
+                text-shadow: -3px 0 rgba(255, 0, 0, 0.4), 3px 0 rgba(0, 255, 255, 0.4);
+                transform: translate(2px, -1px);
+            }
+            6% {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+                transform: translate(0, 0);
+            }
+        }
+
+        /* Subtitle */
+        .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2em;
+            color: #666;
+            letter-spacing: 8px;
+            margin: 30px 0;
+            text-transform: uppercase;
+        }
+
+        /* Message blocks */
+        .message-block {
+            border: 1px solid #222;
+            padding: 25px;
+            margin: 40px auto;
+            max-width: 600px;
+            background: rgba(10, 10, 10, 0.8);
+            text-align: left;
+        }
+
+        .message-block .label {
+            font-family: 'VT323', monospace;
+            color: #444;
+            font-size: 0.9em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .message-block .content {
+            color: #777;
+            font-size: 0.95em;
+            line-height: 2;
+            letter-spacing: 1px;
+        }
+
+        /* Static noise */
+        .static-noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 995;
+        }
+
+        /* Footer message */
+        .footer-message {
+            font-family: 'VT323', monospace;
+            color: #333;
+            font-size: 1em;
+            letter-spacing: 5px;
+            margin-top: 60px;
+            text-transform: uppercase;
+        }
+
+        /* Shadow figures */
+        .shadow {
+            position: fixed;
+            font-size: 150px;
+            opacity: 0.02;
+            pointer-events: none;
+            z-index: 1;
+            color: #fff;
+        }
+
+        .shadow-1 {
+            left: 2%;
+            top: 30%;
+        }
+
+        .shadow-2 {
+            right: 2%;
+            top: 40%;
+            transform: scaleX(-1);
+        }
+
+        .shadow-3 {
+            left: 10%;
+            bottom: 20%;
+            font-size: 100px;
+        }
+
+        /* Breathing animation for container */
+        @keyframes breathe {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            animation: breathe 8s ease-in-out infinite;
+        }
+
+        /* Back link */
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            color: #444;
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 15px 40px;
+            border: 1px solid #222;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #666;
+            border-color: #444;
+            background: rgba(30, 30, 30, 0.3);
+        }
+
+        /* Redacted */
+        .redacted {
+            background: #111;
+            color: #111;
+            padding: 0 8px;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        /* Subject code boxes */
+        .subjects-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .subject-box {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid #333;
+            padding: 15px;
+            text-align: left;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .subject-box:hover {
+            border-color: #555;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .subject-box.status-deceased {
+            border-left: 3px solid #8b0000;
+        }
+
+        .subject-box.status-deceased:hover {
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.4);
+        }
+
+        .subject-box.status-alive {
+            border-left: 3px solid #0a0;
+        }
+
+        .subject-box.status-alive:hover {
+            box-shadow: 0 0 20px rgba(0, 170, 0, 0.4);
+        }
+
+        .subject-box.status-unknown {
+            border-left: 3px solid #666;
+        }
+
+        .subject-box.status-unknown:hover {
+            box-shadow: 0 0 20px rgba(102, 102, 102, 0.4);
+        }
+
+        /* Subject modal - meme card style */
+        .subject-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .subject-modal.active {
+            display: flex;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .subject-modal-content {
+            background: linear-gradient(145deg, rgba(20, 20, 20, 0.98), rgba(10, 10, 10, 0.95));
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            color: #ccc;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.8);
+            border: 2px solid #333;
+            position: relative;
+        }
+
+        .subject-modal-content h2 {
+            font-family: 'VT323', monospace;
+            font-size: 3em;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        .subject-modal-content h2.deceased {
+            color: #ff4444;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+        }
+
+        .subject-modal-content h2.alive {
+            color: #00ff00;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .subject-modal-content h2.unknown {
+            color: #888;
+            text-shadow: 0 0 20px rgba(136, 136, 136, 0.5);
+        }
+
+        .subject-modal-content .modal-body {
+            text-align: left;
+            line-height: 2;
+            font-size: 1.1em;
+            margin: 20px 0;
+        }
+
+        .subject-modal-content .modal-body strong {
+            color: #ff4444;
+        }
+
+        .subject-modal-content .access-code {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1em;
+            color: #ffd43b;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+
+        .close-modal {
+            background: transparent;
+            color: #888;
+            border: 2px solid #444;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+
+        .close-modal:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-color: #666;
+        }
+
+        .enter-sector-btn {
+            background: linear-gradient(145deg, #8b0000, #5a0000);
+            border: 2px solid #ff4444;
+            color: #fff;
+            padding: 12px 30px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-family: 'VT323', monospace;
+            font-size: 1.3em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+
+        .enter-sector-btn:hover {
+            background: linear-gradient(145deg, #aa0000, #8b0000);
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+            transform: scale(1.05);
+        }
+
+        .enter-sector-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .subject-code {
+            font-family: 'VT323', monospace;
+            font-size: 1.4em;
+            color: #999;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .subject-status {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .subject-status.deceased { color: #8b0000; }
+        .subject-status.alive { color: #0a0; }
+        .subject-status.unknown { color: #666; }
+
+        .subject-data {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7em;
+            color: #444;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #222;
+            line-height: 1.8;
+        }
+
+        .code-box {
+            background: #0a0a0a;
+            border: 1px solid #333;
+            padding: 8px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75em;
+            color: #666;
+            margin-top: 8px;
+            border-radius: 3px;
+            word-break: break-all;
+            min-height: 45px;
+        }
+
+        .code-box-label {
+            font-size: 0.9em;
+            color: #444;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Decoder styles */
+        .encrypted-text {
+            color: #333;
+            background: #111;
+            padding: 0 5px;
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        .encrypted-text.decoded {
+            color: #0f0;
+            background: rgba(0, 255, 0, 0.1);
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+            animation: decodeReveal 0.5s ease-out;
+        }
+
+        @keyframes decodeReveal {
+            0% { transform: scale(1); filter: blur(5px); }
+            50% { transform: scale(1.1); filter: blur(2px); }
+            100% { transform: scale(1); filter: blur(0); }
+        }
+
+        .decoder-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #1a3a1a, #0a2a0a);
+            border: 2px solid #0f0;
+            color: #0f0;
+            padding: 15px 25px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: none;
+        }
+
+        .decoder-btn:hover {
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+            transform: scale(1.05);
+        }
+
+        .decoder-btn.active {
+            display: block;
+            animation: decoderPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes decoderPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(0, 255, 0, 0.6); }
+        }
+
+        .decoder-status {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 10px 15px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8em;
+            border-radius: 5px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .decoder-status.visible {
+            display: block;
+        }
+
+        .inventory-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #3a3a1a, #2a2a0a);
+            border: 2px solid #ffd43b;
+            color: #ffd43b;
+            padding: 15px 25px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 212, 59, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .inventory-btn:hover {
+            box-shadow: 0 0 30px rgba(255, 212, 59, 0.6);
+            transform: scale(1.05);
+        }
+
+        .inventory-panel {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd43b;
+            padding: 20px;
+            min-width: 250px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0 30px rgba(255, 212, 59, 0.3);
+        }
+
+        .inventory-panel.show {
+            display: block;
+            animation: panelSlide 0.3s ease-out;
+        }
+
+        @keyframes panelSlide {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .inventory-panel h4 {
+            font-family: 'VT323', monospace;
+            color: #ffd43b;
+            font-size: 1.5em;
+            letter-spacing: 3px;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            border-bottom: 1px solid #ffd43b;
+            padding-bottom: 10px;
+        }
+
+        .inventory-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .inventory-items li {
+            font-family: 'Share Tech Mono', monospace;
+            color: #aaa;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+            font-size: 0.95em;
+        }
+
+        .inventory-items li:last-child {
+            border-bottom: none;
+        }
+
+        .inventory-items li.empty {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-overlay"></div>
+    <div class="tracking-line"></div>
+    <div class="static-noise"></div>
+
+    <!-- Shadow figures in background -->
+    <div class="shadow shadow-1">👤</div>
+    <div class="shadow shadow-2">👤</div>
+    <div class="shadow shadow-3">👁</div>
+
+    <!-- Inventory button -->
+    <button class="inventory-btn" id="inventoryBtn" onclick="toggleInventory()">🎒 INVENTORY</button>
+    <div class="inventory-panel" id="inventoryPanel">
+        <h4>📦 Your Inventory</h4>
+        <ul class="inventory-items" id="inventoryItems">
+            <li class="empty">Loading...</li>
+        </ul>
+    </div>
+
+    <!-- Decoder button -->
+    <button class="decoder-btn" id="decoderBtn" onclick="toggleDecoder()">🔓 ACTIVATE DECODER</button>
+    <div class="decoder-status" id="decoderStatus">DECODER ACTIVE</div>
+
+    <!-- Subject Modal -->
+    <div class="subject-modal" id="subjectModal">
+        <div class="subject-modal-content">
+            <h2 id="modalSubjectCode"></h2>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="access-code" id="modalAccessCode"></div>
+            <button class="close-modal" onclick="closeSubjectModal()">✖ CLOSE</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="warning-text glitch">YOU ARE NOT ALONE</h1>
+        
+        <div class="subtitle">They are watching...</div>
+
+        <div class="message-block">
+            <div class="label">Transmission Received: 15/03/2025 23:47:12</div>
+            <div class="content">
+                You were never meant to find this page.<br>
+                But now that you have...<br>
+                <span class="encrypted-text" data-decoded="THEY KNOW">████████</span><br>
+                <br>
+                There are others like you.<br>
+                Others who found the hidden paths.<br>
+                Others who <span class="encrypted-text" data-decoded="DIED">███████</span>.<br>
+                <br>
+                Run while you still can.
+            </div>
+        </div>
+
+        <div class="message-block">
+            <div class="label">SUBJECTS STATUS:</div>
+            <div class="subjects-container">
+                <div class="subject-box status-deceased" onclick="openSubjectModal('S14', 'deceased', 'Sector 7', 'Critical', '7X-9942-DELTA', 'The first to fall. S14 encountered the corruption head-on and never stood a chance. Their sector is now a graveyard of memories.', undefined, undefined, undefined, undefined)">
+                    <div class="subject-code">S14</div>
+                    <div class="subject-status deceased">DECEASED</div>
+                    <div class="subject-data">
+                        LAST SEEN: Sector 7<br>
+                        CONDITION: Critical<br>
+                        <div class="code-box-label">ACCESS CODE:</div>
+                        <div class="code-box">7X-9942-DELTA</div>
+                    </div>
+                </div>
+                <div class="subject-box status-deceased" onclick="openSubjectModal('L14', 'deceased', 'Sector 3', 'Terminal', '3L-7721-OMEGA', 'Trapped in an endless death loop. L14\'s final moments repeat eternally. Their soul fragments scattered across the corruption zone.', undefined, undefined, undefined, undefined)">
+                    <div class="subject-code">L14</div>
+                    <div class="subject-status deceased">DECEASED</div>
+                    <div class="subject-data">
+                        LAST SEEN: Sector 3<br>
+                        CONDITION: Terminal<br>
+                        <div class="code-box-label">ACCESS CODE:</div>
+                        <div class="code-box">3L-7721-OMEGA</div>
+                    </div>
+                </div>
+                <div class="subject-box status-deceased" onclick="openSubjectModal('F13', 'deceased', 'Sector 9', 'Fatal', '9F-3381-THETA', 'The corruption consumed them completely. F13\'s sector is now ground zero for the spread. Nothing remains but echoes.', undefined, undefined, undefined, undefined)">
+                    <div class="subject-code">F13</div>
+                    <div class="subject-status deceased">DECEASED</div>
+                    <div class="subject-data">
+                        LAST SEEN: Sector 9<br>
+                        CONDITION: Fatal<br>
+                        <div class="code-box-label">ACCESS CODE:</div>
+                        <div class="code-box">9F-3381-THETA</div>
+                    </div>
+                </div>
+                <div class="subject-box status-deceased" onclick="openSubjectModal('D14', 'deceased', 'Sector 2', 'Critical', '2D-5566-ALPHA', 'They fought until the end. D14\'s sector shows signs of a desperate struggle. They didn\'t go down without a fight.', undefined, undefined, undefined, undefined)">
+                    <div class="subject-code">D14</div>
+                    <div class="subject-status deceased">DECEASED</div>
+                    <div class="subject-data">
+                        LAST SEEN: Sector 2<br>
+                        CONDITION: Critical<br>
+                        <div class="code-box-label">ACCESS CODE:</div>
+                        <div class="code-box">2D-5566-ALPHA</div>
+                    </div>
+                </div>
+                <div class="subject-box status-unknown" onclick="openSubjectModal('C13', 'unknown', '████████', 'Uncertain', '█████████████████', 'The first subject. C13\'s fate remains unknown. Some say they escaped. Others say they became something else...', 'SECTOR 1', '1C-0013-UNKNOWN')">
+                    <div class="subject-code">C13</div>
+                    <div class="subject-status unknown">UNKNOWN</div>
+                    <div class="subject-data">
+                        LAST SEEN: <span class="encrypted-text" data-decoded="SECTOR 1">████████</span><br>
+                        CONDITION: Uncertain<br>
+                        <div class="code-box-label">ACCESS CODE:</div>
+                        <div class="code-box"><span class="encrypted-text" data-decoded="1C-0013-UNKNOWN">█████████████████</span></div>
+                    </div>
+                </div>
+                <div class="subject-box status-alive" onclick="openSubjectModal('E13', 'alive', 'Sector 5', 'Stable', '5E-1102-GAMMA', 'Still holding on. E13 has found a way to resist the corruption. They may be able to help you...', undefined, undefined, undefined, undefined)">
+                    <div class="subject-code">E13</div>
+                    <div class="subject-status alive">ALIVE</div>
+                    <div class="subject-data">
+                        LAST SEEN: Sector 5<br>
+                        CONDITION: Stable<br>
+                        <div class="code-box-label">ACCESS CODE:</div>
+                        <div class="code-box">5E-1102-GAMMA</div>
+                    </div>
+                </div>
+                <div class="subject-box status-alive" onclick="openSubjectModal('A29', 'alive', '████████', 'Stable', '█████████████████', 'YOU are A29. The Teacher. The one who tries to save them all. But can you save yourself?', 'SECTOR 8', '8A-0029-TEACHER', '███ ███████', 'THE TEACHER')">
+                    <div class="subject-code">A29</div>
+                    <div class="subject-status alive">ALIVE</div>
+                    <div class="subject-data">
+                        LAST SEEN: <span class="encrypted-text" data-decoded="SECTOR 8">████████</span><br>
+                        CONDITION: Stable<br>
+                        ROLE: <span class="encrypted-text" data-decoded="THE TEACHER">███ ███████</span><br>
+                        <div class="code-box-label">ACCESS CODE:</div>
+                        <div class="code-box"><span class="encrypted-text" data-decoded="8A-0029-TEACHER">█████████████████</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-message">
+            ⚠ You have been warned ⚠
+        </div>
+
+        <a href="/newpage" class="back-link">← Leave This Place</a>
+    </div>
+
+    <script>
+        // Check for decoder in inventory on page load
+        let hasDecoder = false;
+        let decoderActive = false;
+        let inventoryOpen = false;
+        let playerInventory = [];
+
+        async function checkForDecoder() {
+            await loadInventory();
+            
+            if (hasDecoder) {
+                document.getElementById('decoderBtn').classList.add('active');
+                document.getElementById('decoderStatus').classList.add('visible');
+            }
+        }
+
+        async function loadInventory() {
+            try {
+                const response = await fetch('/get_inventory', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.inventory) {
+                    playerInventory = data.inventory;
+                    hasDecoder = playerInventory.some(item => item.includes('Decoder') || item.includes('🔓'));
+                    updateInventoryDisplay();
+                }
+            } catch (error) {
+                console.error('Error loading inventory:', error);
+            }
+        }
+
+        function toggleInventory() {
+            inventoryOpen = !inventoryOpen;
+            const inventoryPanel = document.getElementById('inventoryPanel');
+            
+            if (inventoryOpen) {
+                inventoryPanel.classList.add('show');
+                updateInventoryDisplay();
+            } else {
+                inventoryPanel.classList.remove('show');
+            }
+        }
+
+        function updateInventoryDisplay() {
+            const inventoryItems = document.getElementById('inventoryItems');
+            
+            if (playerInventory.length === 0) {
+                inventoryItems.innerHTML = '<li class="empty">No items collected yet</li>';
+            } else {
+                inventoryItems.innerHTML = playerInventory.map(item => 
+                    `<li>${item}</li>`
+                ).join('');
+            }
+        }
+
+        function toggleDecoder() {
+            decoderActive = !decoderActive;
+            const encryptedElements = document.querySelectorAll('.encrypted-text');
+            const decoderBtn = document.getElementById('decoderBtn');
+            const decoderStatus = document.getElementById('decoderStatus');
+
+            if (decoderActive) {
+                // Decode all encrypted text
+                encryptedElements.forEach(el => {
+                    const decodedText = el.getAttribute('data-decoded');
+                    if (decodedText) {
+                        el.textContent = decodedText;
+                        el.classList.add('decoded');
+                    }
+                });
+                decoderBtn.textContent = '🔒 DEACTIVATE DECODER';
+                decoderStatus.textContent = 'DECODER ACTIVE - TEXT REVEALED';
+            } else {
+                // Re-encrypt all text
+                encryptedElements.forEach(el => {
+                    el.textContent = '████████';
+                    el.classList.remove('decoded');
+                });
+                decoderBtn.textContent = '🔓 ACTIVATE DECODER';
+                decoderStatus.textContent = 'DECODER ACTIVE';
+            }
+        }
+
+        function enterSector(sectorNumber) {
+            // Redirect to the sector page
+            window.location.href = '/sector-' + sectorNumber;
+        }
+
+        function openSubjectModal(code, status, sector, condition, accessCode, description, decodedSector, decodedAccessCode, encryptedRole, decodedRole) {
+            const modal = document.getElementById('subjectModal');
+            const modalCode = document.getElementById('modalSubjectCode');
+            const modalBody = document.getElementById('modalBody');
+            const modalAccessCode = document.getElementById('modalAccessCode');
+
+            modalCode.textContent = code;
+            modalCode.className = status;
+
+            // Use encrypted or decoded sector based on decoder state
+            const displaySector = decoderActive && decodedSector ? decodedSector : sector;
+            
+            // Build role info if provided (for A29)
+            let roleInfo = '';
+            if (encryptedRole && decodedRole) {
+                const displayRole = decoderActive ? decodedRole : encryptedRole;
+                roleInfo = `<br><strong>ROLE:</strong> ${displayRole}`;
+            }
+
+            modalBody.innerHTML = `
+                <strong>STATUS:</strong> ${status.toUpperCase()}<br>
+                <strong>SECTOR:</strong> ${displaySector}${roleInfo}<br>
+                <strong>CONDITION:</strong> ${condition}<br><br>
+                ${description}
+            `;
+
+            // Show access code (encrypted or decoded based on decoder)
+            const displayAccessCode = decoderActive && decodedAccessCode ? decodedAccessCode : accessCode;
+            modalAccessCode.textContent = 'ACCESS CODE: ' + displayAccessCode;
+
+            // Show modal
+            modal.classList.add('active');
+        }
+
+        function closeSubjectModal() {
+            document.getElementById('subjectModal').classList.remove('active');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('subjectModal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'subjectModal') {
+                closeSubjectModal();
+            }
+        });
+
+        // Listen for L14 soul collection
+        async function checkL14Soul() {
+            try {
+                const response = await fetch('/get_inventory', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                if (data.success && data.inventory) {
+                    const hasSoul = data.inventory.some(item => 
+                        item.includes('L14') || item.includes('💚')
+                    );
+                    if (hasSoul) {
+                        console.log('L14 has been saved!');
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking L14 soul:', error);
+            }
+        }
+
+        // Check for decoder on page load
+        checkForDecoder();
+        checkL14Soul();
+
+        // Random glitch intensification
+        setInterval(() => {
+            const glitchElement = document.querySelector('.glitch');
+            glitchElement.style.animationDuration = (Math.random() * 1.5 + 0.3) + 's';
+            setTimeout(() => {
+                glitchElement.style.animationDuration = '3s';
+            }, 800);
+        }, 4000);
+
+        // Occasional screen static burst
+        setInterval(() => {
+            const overlay = document.querySelector('.screen-overlay');
+            overlay.style.background = 'rgba(255, 255, 255, 0.08)';
+            setTimeout(() => {
+                overlay.style.background = 'rgba(180, 190, 180, 0.03)';
+            }, 80);
+        }, 7000);
+
+        // Random shadow movement
+        setInterval(() => {
+            const shadows = document.querySelectorAll('.shadow');
+            const randomShadow = shadows[Math.floor(Math.random() * shadows.length)];
+            randomShadow.style.opacity = 0.05;
+            setTimeout(() => {
+                randomShadow.style.opacity = 0.02;
+            }, 200);
+        }, 3000);
+
+        // Flicker lights effect
+        setInterval(() => {
+            const container = document.querySelector('.container');
+            container.style.opacity = 0.7;
+            setTimeout(() => {
+                container.style.opacity = 0.9;
+            }, 100);
+        }, 5000);
+    </script>
+</body>
+</html>

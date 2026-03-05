@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARCHIVE_047 - Subject: LEO</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #b8b8b8;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* VHS/CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Screen curvature vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, transparent 60%, rgba(0,0,0,0.4) 100%);
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        /* Subtle screen flicker */
+        @keyframes screen-flicker {
+            0%, 100% { opacity: 1; }
+            95% { opacity: 1; }
+            96% { opacity: 0.97; }
+            97% { opacity: 1; }
+            98% { opacity: 0.98; }
+            99% { opacity: 1; }
+        }
+
+        .screen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(180, 190, 180, 0.02);
+            pointer-events: none;
+            z-index: 997;
+            animation: screen-flicker 0.1s infinite;
+        }
+
+        /* Tracking lines */
+        .tracking-line {
+            position: fixed;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.03);
+            animation: tracking-scroll 8s linear infinite;
+            pointer-events: none;
+            z-index: 996;
+        }
+
+        @keyframes tracking-scroll {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header - Archive style */
+        .archive-header {
+            border: 1px solid #333;
+            padding: 20px;
+            margin-bottom: 40px;
+            background: rgba(15, 15, 15, 0.9);
+        }
+
+        .archive-header .classification {
+            font-family: 'VT323', monospace;
+            color: #555;
+            font-size: 0.9em;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .archive-header h1 {
+            font-family: 'VT323', monospace;
+            color: #c9c9c9;
+            font-size: 2.2em;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            text-align: center;
+            margin: 0;
+        }
+
+        .archive-header .warning {
+            color: #666;
+            font-size: 0.75em;
+            text-align: center;
+            margin-top: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Tombstone */
+        .tombstone {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 50%, #0a0a0a 100%);
+            border-radius: 80px 80px 15px 15px;
+            padding: 25px 20px;
+            margin: 40px auto;
+            max-width: 280px;
+            border: 1px solid #2a2a2a;
+            box-shadow:
+                0 10px 40px rgba(0, 0, 0, 0.9),
+                inset 0 0 30px rgba(20, 20, 20, 0.5);
+            position: relative;
+        }
+
+        .tombstone::before {
+            content: '†';
+            font-family: 'VT323', monospace;
+            font-size: 50px;
+            color: #444;
+            display: block;
+            margin-bottom: 15px;
+            text-align: center;
+            letter-spacing: 5px;
+        }
+
+        .subject-photo {
+            max-width: 120px;
+            margin: 15px auto;
+            display: block;
+            filter: grayscale(100%) contrast(1.3) brightness(0.5);
+            border: 1px solid #222;
+        }
+
+        .subject-name {
+            font-family: 'VT323', monospace;
+            color: #999;
+            font-size: 2.2em;
+            text-align: center;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            margin: 15px 0 10px;
+        }
+
+        .dates {
+            font-family: 'Share Tech Mono', monospace;
+            color: #555;
+            font-size: 0.85em;
+            text-align: center;
+            letter-spacing: 4px;
+            margin: 12px 0;
+            padding: 8px 0;
+            border-top: 1px solid #1a1a1a;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        .epitaph {
+            color: #666;
+            font-size: 0.8em;
+            line-height: 1.8;
+            text-align: center;
+            margin-top: 18px;
+            letter-spacing: 1px;
+            padding-top: 15px;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .epitaph .line {
+            display: block;
+            margin: 6px 0;
+        }
+
+        /* Data block */
+        .data-block {
+            border: 1px solid #222;
+            padding: 15px;
+            margin: 30px 0;
+            background: rgba(8, 8, 8, 0.8);
+            font-family: 'VT323', monospace;
+        }
+
+        .data-block .label {
+            color: #444;
+            font-size: 0.8em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .data-block .value {
+            color: #777;
+            font-size: 1em;
+            letter-spacing: 1px;
+        }
+
+        /* Footer */
+        .archive-footer {
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #222;
+            text-align: center;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: #555;
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 1em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 12px 30px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #888;
+            border-color: #555;
+            background: rgba(50, 50, 50, 0.2);
+        }
+
+        .archive-footer .disclaimer {
+            color: #333;
+            font-size: 0.7em;
+            margin-top: 25px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Glitch effect on text */
+        @keyframes text-glitch {
+            0%, 100% { 
+                text-shadow: none;
+                clip-path: none;
+            }
+            2% {
+                text-shadow: 2px 0 rgba(255, 0, 0, 0.3);
+                clip-path: inset(10% 0 80% 0);
+            }
+            4% {
+                text-shadow: -2px 0 rgba(0, 255, 255, 0.3);
+                clip-path: inset(80% 0 10% 0);
+            }
+            6% {
+                text-shadow: none;
+                clip-path: none;
+            }
+        }
+
+        .glitch {
+            animation: text-glitch 4s infinite;
+        }
+
+        /* Timestamp */
+        .timestamp {
+            font-family: 'VT323', monospace;
+            color: #666;
+            font-size: 1.1em;
+            text-align: right;
+            letter-spacing: 3px;
+            margin-top: 15px;
+            text-transform: uppercase;
+            animation: timestamp-pulse 3s infinite;
+            cursor: pointer;
+        }
+
+        .timestamp-label {
+            color: #444;
+            font-size: 0.7em;
+            letter-spacing: 2px;
+            margin-right: 10px;
+        }
+
+        .timestamp-date {
+            color: #888;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes timestamp-pulse {
+            0%, 100% { opacity: 0.6; text-shadow: 0 0 5px rgba(255, 255, 255, 0.1); }
+            50% { opacity: 1; text-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+        }
+
+        /* Redacted text effect */
+        .redacted {
+            background: #1a1a1a;
+            color: #1a1a1a;
+            padding: 0 5px;
+        }
+
+        .redacted:hover {
+            color: #444;
+        }
+
+        /* Subtle tombstone glow */
+        @keyframes tombstone-pulse {
+            0%, 100% { box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 30px rgba(20,20,20,0.5); }
+            50% { box-shadow: 0 10px 40px rgba(0,0,0,0.9), inset 0 0 40px rgba(30,30,30,0.6); }
+        }
+
+        .tombstone {
+            animation: tombstone-pulse 8s ease-in-out infinite;
+        }
+
+        /* Digging mechanics */
+        .dig-area {
+            position: relative;
+            margin: 30px auto;
+            max-width: 280px;
+            text-align: center;
+        }
+
+        .dig-button {
+            background: linear-gradient(135deg, #4a4a4a, #2a2a2a);
+            border: 2px solid #555;
+            color: #888;
+            padding: 15px 40px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            border-radius: 5px;
+        }
+
+        .dig-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #5a5a5a, #3a3a3a);
+            color: #aaa;
+            border-color: #777;
+        }
+
+        .dig-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .dig-progress {
+            width: 100%;
+            height: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            margin-top: 15px;
+            border-radius: 3px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .dig-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4a4a4a, #6a6a6a);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .dig-message {
+            color: #666;
+            font-size: 0.85em;
+            margin-top: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 20px;
+        }
+
+        /* Dug up grave style */
+        .tombstone.dug {
+            animation: graveOpen 1s ease-out;
+        }
+
+        @keyframes graveOpen {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0); }
+        }
+
+        .revealed-content {
+            display: none;
+            background: rgba(20, 30, 20, 0.9);
+            border: 2px solid #3a5a3a;
+            padding: 20px;
+            margin: 30px auto;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .revealed-content.show {
+            display: block;
+            animation: revealFade 0.5s ease-out;
+        }
+
+        @keyframes revealFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .revealed-content h3 {
+            font-family: 'VT323', monospace;
+            color: #5a8a5a;
+            font-size: 1.8em;
+            letter-spacing: 5px;
+            margin-bottom: 15px;
+        }
+
+        .revealed-content p {
+            color: #7a7;
+            font-family: 'Share Tech Mono', monospace;
+            line-height: 1.8;
+        }
+
+        .shovel-required {
+            color: #888;
+            font-size: 0.8em;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        .shovel-required.has-shovel {
+            color: #5a8a5a;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-overlay"></div>
+    <div class="tracking-line"></div>
+
+    <div class="container">
+        <div class="archive-header">
+            <div class="classification">
+                Archive Classification: MEMORIAL_047 // Access Level: Restricted
+            </div>
+            <h1 class="glitch">SUBJECT: LEO</h1>
+            <div class="warning">
+                ⚠ Memorial Archive - Do Not Disturb ⚠
+            </div>
+        </div>
+
+        <div class="tombstone" id="tombstone">
+            <img src="{{ url_for('static', filename='img/leo.png') }}" alt="Subject Photo" class="subject-photo" onerror="this.style.display='none';">
+
+            <div class="subject-name glitch">LEO</div>
+
+            <div class="dates">
+                2020 — 2026
+            </div>
+
+            <div class="epitaph">
+                <span class="line">HERE LIES LEO</span>
+                <span class="line">STATUS: <span class="redacted">DECEASED</span></span>
+                <span class="line">"REST IN PEACE"</span>
+                <span class="line">NEVER FORGOTTEN</span>
+            </div>
+        </div>
+
+        <div class="dig-area">
+            <button class="dig-button" id="digButton" onclick="startDigging()">
+                ⛏️ Dig Grave
+            </button>
+            <div class="dig-progress" id="digProgress">
+                <div class="dig-progress-bar" id="progressBar"></div>
+            </div>
+            <div class="dig-message" id="digMessage"></div>
+            <div class="shovel-required" id="shovelMessage">🗝️ Shovel required</div>
+        </div>
+
+        <div class="revealed-content" id="revealedContent">
+            <h3>💀 GRAVE OPENED 💀</h3>
+            <p>
+                You've disturbed Leo's resting place...<br>
+                Inside, you find a strange device...
+            </p>
+            <div style="margin: 20px 0; padding: 15px; background: rgba(0, 0, 0, 0.5); border: 1px solid #5a8a5a; border-radius: 5px;">
+                <p style="color: #fff; font-size: 1.3em; margin: 0;">🔓 DECODER FOUND</p>
+            </div>
+            <p style="color: #8a8; margin-top: 15px; font-size: 1em;">
+                "A device that can reveal hidden truths..."<br><br>
+                <strong style="color: #fff;">Added to Inventory</strong>
+            </p>
+        </div>
+
+        <div class="data-block">
+            <div class="label">Case Notes:</div>
+            <div class="value">
+                Subject memorialized. All protocols observed.
+                Family notified. Case closed.
+            </div>
+        </div>
+
+        <div class="data-block">
+            <div class="label">Archive Reference:</div>
+            <div class="value">DOC-2026-047-MEM // CLEARANCE: LEVEL 3</div>
+        </div>
+
+        <div class="archive-footer">
+            <a href="/secret" class="back-link">← Return to Archive Index</a>
+
+            <div class="timestamp">
+                <span class="timestamp-label">LAST ACCESS:</span><span class="timestamp-date" id="access-time">--/--/---- --:--:--</span>
+            </div>
+
+            <div class="disclaimer">
+                Unauthorized access to memorial archives is prohibited
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set current timestamp
+        function updateTimestamp() {
+            // Fixed archive date for eerie effect
+            document.getElementById('access-time').textContent = '03/15/25 23:47:12';
+        }
+        updateTimestamp();
+
+        // Check for shovel in inventory on page load
+        let hasShovel = false;
+        let graveDug = false;
+
+        async function checkInventory() {
+            try {
+                const response = await fetch('/get_inventory', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.inventory) {
+                    // Check if shovel is in inventory
+                    hasShovel = data.inventory.some(item => item.includes('Shovel') || item.includes('🗝️'));
+                    updateShovelStatus();
+                }
+            } catch (error) {
+                console.error('Error checking inventory:', error);
+                // Allow digging anyway for testing
+                hasShovel = true;
+                updateShovelStatus();
+            }
+        }
+
+        function updateShovelStatus() {
+            const shovelMsg = document.getElementById('shovelMessage');
+            const digButton = document.getElementById('digButton');
+            
+            if (hasShovel) {
+                shovelMsg.textContent = '✓ Shovel available - Ready to dig';
+                shovelMsg.classList.add('has-shovel');
+                digButton.disabled = false;
+            } else {
+                shovelMsg.textContent = '🗝️ Shovel required - Find a shovel first';
+                shovelMsg.classList.remove('has-shovel');
+                digButton.disabled = true;
+            }
+        }
+
+        async function startDigging() {
+            if (!hasShovel || graveDug) return;
+
+            const digButton = document.getElementById('digButton');
+            const digProgress = document.getElementById('digProgress');
+            const progressBar = document.getElementById('progressBar');
+            const digMessage = document.getElementById('digMessage');
+            const tombstone = document.getElementById('tombstone');
+            const revealedContent = document.getElementById('revealedContent');
+
+            digButton.disabled = true;
+            digProgress.style.display = 'block';
+            
+            const digMessages = [
+                'Breaking ground...',
+                'Digging deeper...',
+                'Something\'s down there...',
+                'Almost there...',
+                'Found something!'
+            ];
+
+            let progress = 0;
+            const digInterval = setInterval(() => {
+                progress += 5;
+                progressBar.style.width = progress + '%';
+                
+                // Update message based on progress
+                const msgIndex = Math.floor((progress / 100) * digMessages.length);
+                if (digMessages[msgIndex]) {
+                    digMessage.textContent = digMessages[msgIndex];
+                }
+
+                if (progress >= 100) {
+                    clearInterval(digInterval);
+                    graveDug = true;
+                    
+                    // Add decoder to inventory
+                    fetch('/add_item', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({item: '🔓 Leo\'s Decoder'})
+                    }).then(response => response.json())
+                      .then(data => {
+                          console.log('Decoder added to inventory:', data);
+                      });
+                    
+                    // Show grave opened animation
+                    tombstone.classList.add('dug');
+                    
+                    // Show revealed content
+                    setTimeout(() => {
+                        revealedContent.classList.add('show');
+                        digProgress.style.display = 'none';
+                        digMessage.textContent = 'Grave opened...';
+                        digButton.textContent = 'Grave Already Dug';
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        // Check inventory on page load
+        checkInventory();
+
+        // Random glitch intensification
+        setInterval(() => {
+            const glitchElements = document.querySelectorAll('.glitch');
+            const randomElement = glitchElements[Math.floor(Math.random() * glitchElements.length)];
+            randomElement.style.animationDuration = (Math.random() * 2 + 0.5) + 's';
+            setTimeout(() => {
+                randomElement.style.animationDuration = '4s';
+            }, 500);
+        }, 3000);
+
+        // Occasional screen static burst
+        setInterval(() => {
+            const overlay = document.querySelector('.screen-overlay');
+            overlay.style.background = 'rgba(200, 200, 200, 0.05)';
+            setTimeout(() => {
+                overlay.style.background = 'rgba(180, 190, 180, 0.02)';
+            }, 50);
+        }, 5000);
+    </script>
+</body>
+</html>

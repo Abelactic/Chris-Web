@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- de las 9 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dream World</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: linear-gradient(180deg, #0a0a20 0%, #1a0a2e 50%, #0a1a2a 100%);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #b8c4d4;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Dreamy particles */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+            animation: dreamFloat 60s linear infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes dreamFloat {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-550px); }
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .dream-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .dream-title {
+            font-family: 'VT323', monospace;
+            font-size: 4em;
+            color: #6ab0c4;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            text-shadow: 0 0 30px rgba(106, 176, 196, 0.8);
+            animation: dreamPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes dreamPulse {
+            0%, 100% { text-shadow: 0 0 30px rgba(106, 176, 196, 0.8); opacity: 1; }
+            50% { text-shadow: 0 0 50px rgba(106, 176, 196, 1); opacity: 0.8; }
+        }
+
+        .dream-subtitle {
+            font-size: 1.2em;
+            color: #8899a4;
+            letter-spacing: 5px;
+            margin-top: 15px;
+        }
+
+        .dream-message {
+            background: rgba(106, 176, 196, 0.1);
+            border: 1px solid rgba(106, 176, 196, 0.3);
+            padding: 30px;
+            margin: 30px 0;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .dream-message p {
+            color: #a8b8c4;
+            line-height: 2;
+            font-size: 1.1em;
+        }
+
+        .dream-vision {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(106, 176, 196, 0.4);
+            padding: 25px;
+            margin: 30px 0;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .dream-vision h3 {
+            font-family: 'VT323', monospace;
+            color: #6ab0c4;
+            font-size: 2em;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+        }
+
+        .dream-vision p {
+            color: #8899a4;
+            line-height: 1.8;
+            font-size: 1em;
+        }
+
+        .wake-btn {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, rgba(106, 176, 196, 0.3), rgba(44, 95, 110, 0.3));
+            border: 2px solid rgba(106, 176, 196, 0.5);
+            color: #6ab0c4;
+            font-family: 'VT323', monospace;
+            font-size: 1.3em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .wake-btn:hover {
+            background: linear-gradient(135deg, rgba(106, 176, 196, 0.5), rgba(44, 95, 110, 0.5));
+            box-shadow: 0 0 30px rgba(106, 176, 196, 0.6);
+            transform: scale(1.05);
+        }
+
+        .center-link {
+            display: block;
+            text-align: center;
+        }
+
+        /* Floating dream symbols */
+        .dream-symbol {
+            position: fixed;
+            font-size: 2em;
+            opacity: 0.1;
+            pointer-events: none;
+            z-index: 1;
+            animation: symbolFloat 10s ease-in-out infinite;
+        }
+
+        @keyframes symbolFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating dream symbols -->
+    <div class="dream-symbol" style="top: 10%; left: 10%;">👁️</div>
+    <div class="dream-symbol" style="top: 20%; right: 15%;">🗝️</div>
+    <div class="dream-symbol" style="top: 60%; left: 20%;">🚪</div>
+    <div class="dream-symbol" style="top: 70%; right: 10%;">🌙</div>
+    <div class="dream-symbol" style="top: 40%; left: 80%;">💊</div>
+
+    <div class="container">
+        <div class="dream-header">
+            <h1 class="dream-title">💭 DREAM WORLD 💭</h1>
+            <div class="dream-subtitle">Where truth lies hidden...</div>
+        </div>
+
+        <div class="dream-message">
+            <p>
+                You've entered the dream realm.<br>
+                Here, the boundaries between reality and illusion blur.<br>
+                The answers you seek may be closer than you think...
+            </p>
+        </div>
+
+        <div class="dream-vision">
+            <h3>🔮 DREAM VISION 🔮</h3>
+            <p>
+                In your dream, you see...<br><br>
+                <strong style="color: #6ab0c4;">The students are not trapped in the sectors.</strong><br>
+                <strong style="color: #6ab0c4;">The sectors ARE the students.</strong><br><br>
+                Each sector represents a piece of their corrupted souls.<br>
+                C13 was right - they are evolving.<br>
+                But evolution comes at a price...<br><br>
+                <span style="color: #8899a4; font-style: italic;">
+                    "To save them, you must wake them.<br>
+                    To wake them, you must find the Gateway.<br>
+                    The Gateway is not a place.<br>
+                    The Gateway is <span style="color: #6ab0c4; text-shadow: 0 0 10px rgba(106, 176, 196, 0.8);">a choice</span>."
+                </span>
+            </p>
+        </div>
+
+        <div class="dream-message">
+            <p>
+                The sleeping pills showed you this truth.<br>
+                But now you must wake up...<br>
+                And decide what to do with this knowledge.
+            </p>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/newpage" class="wake-btn">← Wake Up</a>
+        </div>
+    </div>
+
+    <script>
+        // Random dream symbol movement
+        setInterval(() => {
+            const symbols = document.querySelectorAll('.dream-symbol');
+            const randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+            randomSymbol.style.opacity = 0.3;
+            setTimeout(() => {
+                randomSymbol.style.opacity = 0.1;
+            }, 500);
+        }, 2000);
+
+        // Occasional screen shimmer
+        setInterval(() => {
+            document.body.style.filter = 'brightness(1.2)';
+            setTimeout(() => {
+                document.body.style.filter = 'brightness(1)';
+            }, 100);
+        }, 5000);
+    </script>
+</body>
+</html>

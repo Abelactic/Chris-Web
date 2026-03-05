@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- mañana son -->
+    <meta charset="UTF-8">
+    <title>Dungeon Adventure</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Metal+Mania&display=swap');
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Metal Mania', cursive, Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: #e6e6e6;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(180deg, #0f3460 0%, #0a2340 100%);
+            color: #ffffff;
+            padding: 30px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(15, 52, 96, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 3px solid #1a4a7a;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(100, 150, 255, 0.3);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 20px rgba(15, 52, 96, 0.5), inset 0 0 20px rgba(0, 0, 0, 0.5);
+            }
+            to {
+                box-shadow: 0 0 40px rgba(15, 52, 96, 0.7), inset 0 0 30px rgba(0, 0, 0, 0.6);
+            }
+        }
+
+        header h1 {
+            font-family: 'Creepster', cursive;
+            font-size: 3.5em;
+            margin: 0;
+            letter-spacing: 5px;
+        }
+
+        header p {
+            font-size: 1.3em;
+            margin-top: 10px;
+            color: #a0c0e0;
+        }
+
+        main {
+            padding: 40px;
+            background: linear-gradient(145deg, rgba(20, 20, 20, 0.9) 0%, rgba(10, 10, 10, 0.95) 100%);
+            margin: 20px auto;
+            max-width: 1000px;
+            border-radius: 20px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 60px rgba(0, 0, 0, 0.5);
+            border: 2px solid #333;
+            position: relative;
+        }
+
+        main::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            pointer-events: none;
+        }
+
+        .chest-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .chest {
+            background: linear-gradient(145deg, #3d2817 0%, #5c3a1e 50%, #3d2817 100%);
+            border: 4px solid #2a1a0f;
+            border-radius: 12px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 
+                0 8px 16px rgba(0, 0, 0, 0.6),
+                inset 0 2px 4px rgba(255, 255, 255, 0.1),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+            color: #d4a574;
+            font-weight: bold;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chest::before {
+            content: '📦';
+            font-size: 3em;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 0 10px rgba(212, 165, 116, 0.5));
+        }
+
+        .chest::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .chest:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 
+                0 15px 30px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(212, 165, 116, 0.4),
+                inset 0 2px 4px rgba(255, 255, 255, 0.15);
+            border-color: #5c3a1e;
+        }
+
+        .chest.selected {
+            transform: translateY(-15px) scale(1.15);
+            box-shadow: 
+                0 20px 40px rgba(255, 215, 0, 0.4),
+                0 0 50px rgba(255, 215, 0, 0.6),
+                inset 0 0 30px rgba(255, 215, 0, 0.3);
+            background: linear-gradient(145deg, #b8860b 0%, #ffd700 50%, #b8860b 100%);
+            border-color: #ffd700;
+            color: #1a0a0a;
+            animation: pulse 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+            to { box-shadow: 0 0 50px rgba(255, 215, 0, 0.9); }
+        }
+
+        .chest-number {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(212, 165, 116, 0.8);
+            position: relative;
+            z-index: 1;
+        }
+
+        .chest span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-message {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: bold;
+            animation: fadeIn 0.5s ease-in;
+            border: 3px solid;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .death-message {
+            background: linear-gradient(145deg, rgba(139, 0, 0, 0.4) 0%, rgba(80, 0, 0, 0.5) 100%);
+            border-color: #ff0000;
+            color: #ff6666;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), inset 0 0 20px rgba(139, 0, 0, 0.3);
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+        }
+
+        .treasure-message {
+            background: linear-gradient(145deg, rgba(0, 100, 0, 0.4) 0%, rgba(0, 50, 0, 0.5) 100%);
+            border-color: #00ff00;
+            color: #66ff66;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.4), inset 0 0 20px rgba(0, 100, 0, 0.3);
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+        }
+
+        .btn {
+            font-family: 'Metal Mania', cursive;
+            font-size: 1.2em;
+            padding: 15px 40px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: 10px;
+        }
+
+        .btn-home {
+            background: linear-gradient(145deg, #1a3a5c 0%, #0f2840 100%);
+            border: 3px solid #2a5a8c;
+            color: #ffffff;
+            margin-top: 30px;
+            display: block;
+            margin: 30px auto 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-home:hover {
+            background: linear-gradient(145deg, #2a5a8c 0%, #1a3a5c 100%);
+            box-shadow: 0 0 25px rgba(42, 90, 140, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(145deg, #3a3a3a 0%, #2a2a2a 100%);
+            border: 3px solid #5a5a5a;
+            color: #c0c0c0;
+            display: block;
+            margin: 15px auto;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(145deg, #5a5a5a 0%, #3a3a3a 100%);
+            box-shadow: 0 0 20px rgba(90, 90, 90, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .btn-info {
+            background: linear-gradient(145deg, #1a4a5c 0%, #0f3840 100%);
+            border: 3px solid #2a6a8c;
+            color: #ffffff;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(145deg, #2a6a8c 0%, #1a4a5c 100%);
+            box-shadow: 0 0 20px rgba(42, 106, 140, 0.6);
+        }
+
+        /* Inventory button - matching you_are_not_alone style */
+        .inventory-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #3a3a1a, #2a2a0a);
+            border: 2px solid #ffd43b;
+            color: #ffd43b;
+            padding: 15px 25px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 212, 59, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .inventory-btn:hover {
+            box-shadow: 0 0 30px rgba(255, 212, 59, 0.6);
+            transform: scale(1.05);
+        }
+
+        .inventory-panel {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd43b;
+            padding: 20px;
+            min-width: 250px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0 30px rgba(255, 212, 59, 0.3);
+        }
+
+        .inventory-panel.show {
+            display: block;
+            animation: panelSlide 0.3s ease-out;
+        }
+
+        @keyframes panelSlide {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .inventory-panel h4 {
+            font-family: 'VT323', monospace;
+            color: #ffd43b;
+            font-size: 1.5em;
+            letter-spacing: 3px;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            border-bottom: 1px solid #ffd43b;
+            padding-bottom: 10px;
+        }
+
+        .inventory-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .inventory-items li {
+            font-family: 'Share Tech Mono', monospace;
+            color: #aaa;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+            font-size: 0.95em;
+        }
+
+        .inventory-items li:last-child {
+            border-bottom: none;
+        }
+
+        .inventory-items li.empty {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+        }
+
+        h3 {
+            color: #90ff90;
+            text-shadow: 0 0 10px rgba(144, 255, 144, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .chest-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            header h1 {
+                font-size: 2.5em;
+            }
+            
+            main {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>💀 Dungeon Adventure 💀</h1>
+        <p>Choose your fate... 5 chests await, but only 2 hold treasures...</p>
+    </header>
+
+    <main>
+        <div class="chest-grid">
+            <div class="chest" onclick="openChest(1)">
+                <div class="chest-number">1</div>
+                <div>CHEST</div>
+            </div>
+            <div class="chest" onclick="openChest(2)">
+                <div class="chest-number">2</div>
+                <div>CHEST</div>
+            </div>
+            <div class="chest" onclick="openChest(3)">
+                <div class="chest-number">3</div>
+                <div>CHEST</div>
+            </div>
+            <div class="chest" onclick="openChest(4)">
+                <div class="chest-number">4</div>
+                <div>CHEST</div>
+            </div>
+            <div class="chest" onclick="openChest(5)">
+                <div class="chest-number">5</div>
+                <div>CHEST</div>
+            </div>
+        </div>
+
+        <div id="result-container" style="display: none;">
+            <div id="result-message" class="result-message"></div>
+        </div>
+
+        <a href="/" class="btn btn-primary btn-home">Return to Home Page</a>
+        <a href="/newpage" class="btn btn-secondary">Back to Memory Lane</a>
+    </main>
+
+    <!-- Inventory button -->
+    <button class="inventory-btn" id="inventoryBtn" onclick="toggleInventory()">🎒 INVENTORY</button>
+    <div class="inventory-panel" id="inventoryPanel">
+        <h4>📦 Your Inventory</h4>
+        <ul class="inventory-items" id="inventoryItems">
+            <li class="empty">Loading...</li>
+        </ul>
+    </div>
+
+    <script>
+        let chests = [1, 2, 3, 4, 5];
+        let deathChests = [];
+        let flashlightChest = null;
+        let crucifixChest = null;
+        let openedChests = [];
+        let serverInventory = {{ inventory | tojson }};
+        let isDead = false;
+
+        // Initialize the dungeon
+        function initializeDungeon() {
+            // Randomly assign 3 death chests
+            deathChests = getRandomElements([1, 2, 3, 4, 5], 3);
+            
+            // From remaining chests, randomly assign flashlight and crucifix
+            let remainingChests = chests.filter(chest => !deathChests.includes(chest));
+            flashlightChest = getRandomElement(remainingChests);
+            remainingChests = remainingChests.filter(chest => chest !== flashlightChest);
+            crucifixChest = getRandomElement(remainingChests);
+        }
+
+        // Helper function to get random elements from array
+        function getRandomElements(array, count) {
+            const shuffled = [...array].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        }
+
+        // Helper function to get random element from array
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        // Initialize the dungeon when page loads
+        initializeDungeon();
+
+        // Function to open a chest
+        function openChest(chestNumber) {
+            if (isDead) {
+                alert("You are dead! You cannot open any more chests. Return to home and try again.");
+                return;
+            }
+
+            if (openedChests.includes(chestNumber)) {
+                alert("You've already opened this chest!");
+                return;
+            }
+
+            if (openedChests.length >= 2) {
+                alert("You've already opened 2 chests!");
+                return;
+            }
+
+            // Highlight the selected chest
+            const chestElement = document.querySelector(`.chest:nth-child(${chestNumber})`);
+            chestElement.classList.add('selected');
+
+            // Add to opened chests
+            openedChests.push(chestNumber);
+
+            // Determine the result
+            let message = '';
+            let messageClass = '';
+
+            if (deathChests.includes(chestNumber)) {
+                message = '💀 YOU DIED! The chest contained a deadly trap! 💀';
+                messageClass = 'death-message';
+                isDead = true;
+
+                // Disable all chests visually
+                document.querySelectorAll('.chest').forEach(chest => {
+                    chest.style.pointerEvents = 'none';
+                    chest.style.opacity = '0.5';
+                });
+
+                // Redirect after delay
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 3000);
+            } else if (chestNumber === flashlightChest) {
+                message = '🔦 CONGRATULATIONS! You found a FLASHLIGHT! 🔦';
+                messageClass = 'treasure-message';
+                
+                // Send request to add item to server inventory
+                fetch('/add_item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({item: 'Flashlight'})
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          serverInventory = data.inventory;
+                          updateInventoryDisplay();
+                      }
+                  });
+            } else if (chestNumber === crucifixChest) {
+                message = '✝️ CONGRATULATIONS! You found a CRUCIFIX! ✝️';
+                messageClass = 'treasure-message';
+                
+                // Send request to add item to server inventory
+                fetch('/add_item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({item: 'Crucifix'})
+                }).then(response => response.json())
+                  .then(data => {
+                      if (data.success) {
+                          serverInventory = data.inventory;
+                          updateInventoryDisplay();
+                      }
+                  });
+            } else {
+                message = '❓ Empty chest... nothing of value here! ❓';
+                messageClass = 'treasure-message';
+            }
+
+            // Update inventory display
+            updateInventoryDisplay();
+
+            // Display the result
+            document.getElementById('result-container').style.display = 'block';
+            const resultDiv = document.getElementById('result-message');
+            resultDiv.innerHTML = message + `<br>Chests opened: ${openedChests.length}/2`;
+            resultDiv.className = `result-message ${messageClass}`;
+        }
+
+        // Inventory system - matching you_are_not_alone style
+        let inventoryOpen = false;
+
+        // Function to update inventory display
+        function updateInventoryDisplay() {
+            const inventoryItems = document.getElementById('inventoryItems');
+
+            if (serverInventory.length === 0) {
+                inventoryItems.innerHTML = '<li class="empty">No items collected yet</li>';
+            } else {
+                inventoryItems.innerHTML = serverInventory.map(item =>
+                    `<li>${item}</li>`
+                ).join('');
+            }
+        }
+
+        // Function to toggle inventory visibility
+        function toggleInventory() {
+            inventoryOpen = !inventoryOpen;
+            const inventoryPanel = document.getElementById('inventoryPanel');
+
+            if (inventoryOpen) {
+                inventoryPanel.classList.add('show');
+                updateInventoryDisplay();
+            } else {
+                inventoryPanel.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>

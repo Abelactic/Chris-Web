@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Memory Lane</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #1a1a2e;
+            background-image: linear-gradient(135deg, rgba(26,26,46,0.5), rgba(22,33,62,0.5), rgba(15,52,96,0.5)),
+                        url("{{ url_for('static', filename='img/familiar.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        header {
+            background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
+            color: #f0f0f0;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+        
+        header h1, header p {
+            text-align: center;
+        }
+
+        main {
+            padding: 40px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+            margin: 30px auto;
+            max-width: 900px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        footer {
+            background: rgba(0,0,0,0.6);
+            color: #a0a0a0;
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .code-container {
+            margin: 30px 0;
+            padding: 30px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 12px;
+            border: 2px solid rgba(100,150,255,0.3);
+            box-shadow: inset 0 0 20px rgba(100,150,255,0.1);
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-weight: bold;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,0,0,0.15);
+            border-radius: 8px;
+            border: 2px solid rgba(255,100,100,0.3);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 5px rgba(255,100,100,0.2); }
+            50% { box-shadow: 0 0 15px rgba(255,100,100,0.4); }
+        }
+
+        h1 {
+            color: #ffffff;
+            text-shadow: 0 0 20px rgba(100,150,255,0.5), 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #a8d8ff;
+            text-shadow: 0 0 10px rgba(100,150,255,0.4);
+        }
+
+        h3 {
+            color: #c4b5fd;
+        }
+
+        p {
+            color: #d0d0d0;
+            line-height: 2;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            margin: 8px;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #11998e, #38ef7d);
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border: none;
+            color: #1a1a2e;
+        }
+
+        .inventory-items span {
+            display: inline-block !important;
+            background: linear-gradient(135deg, #11998e, #38ef7d) !important;
+            color: white !important;
+            padding: 10px 15px !important;
+            margin: 8px !important;
+            border-radius: 8px !important;
+            font-weight: bold !important;
+            box-shadow: 0 4px 15px rgba(56,239,125,0.4);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        #inventory-display {
+            margin-top: 20px !important;
+            padding: 20px !important;
+            background: rgba(17,153,142,0.15) !important;
+            border-radius: 10px !important;
+            border: 2px solid rgba(56,239,125,0.3) !important;
+        }
+        
+        .hint-text {
+            font-style: italic;
+            color: #a8d8ff;
+            background: rgba(100,150,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+        }
+
+        .secret-corner {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            z-index: 9999;
+        }
+
+        /* Sleeping pills usage button */
+        .pills-use-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+
+        .pills-use-btn {
+            background: linear-gradient(135deg, #4a90a4, #2c5f6e);
+            border: 2px solid #6ab0c4;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1em;
+            font-family: 'Georgia', serif;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(74, 144, 164, 0.5);
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .pills-use-btn:hover {
+            transform: translateX(-50%) scale(1.05);
+            box-shadow: 0 6px 30px rgba(74, 144, 164, 0.8);
+        }
+
+        .pills-use-btn.visible {
+            display: block;
+            animation: pillsBtnPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pillsBtnPulse {
+            0%, 100% { box-shadow: 0 4px 20px rgba(74, 144, 164, 0.5); }
+            50% { box-shadow: 0 4px 35px rgba(74, 144, 164, 0.8), 0 0 20px rgba(106, 176, 196, 0.6); }
+        }
+
+        .dream-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .dream-overlay.active {
+            display: flex;
+            animation: dreamFade 3s ease-in-out forwards;
+        }
+
+        @keyframes dreamFade {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .dream-text {
+            color: #6ab0c4;
+            font-size: 2em;
+            font-family: 'Georgia', serif;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(106, 176, 196, 0.8);
+        }
+
+        .dream-text p {
+            margin: 10px 0;
+        }
+
+        /* Inventory button - matching you_are_not_alone style */
+        .inventory-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, #3a3a1a, #2a2a0a);
+            border: 2px solid #ffd43b;
+            color: #ffd43b;
+            padding: 15px 25px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 212, 59, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .inventory-btn:hover {
+            box-shadow: 0 0 30px rgba(255, 212, 59, 0.6);
+            transform: scale(1.05);
+        }
+
+        .inventory-panel {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ffd43b;
+            padding: 20px;
+            min-width: 250px;
+            border-radius: 10px;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 0 30px rgba(255, 212, 59, 0.3);
+        }
+
+        .inventory-panel.show {
+            display: block;
+            animation: panelSlide 0.3s ease-out;
+        }
+
+        @keyframes panelSlide {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .inventory-panel h4 {
+            font-family: 'VT323', monospace;
+            color: #ffd43b;
+            font-size: 1.5em;
+            letter-spacing: 3px;
+            margin: 0 0 15px 0;
+            text-transform: uppercase;
+            border-bottom: 1px solid #ffd43b;
+            padding-bottom: 10px;
+        }
+
+        .inventory-items {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .inventory-items li {
+            font-family: 'Share Tech Mono', monospace;
+            color: #aaa;
+            padding: 8px 0;
+            border-bottom: 1px solid #333;
+            font-size: 0.95em;
+        }
+
+        .inventory-items li:last-child {
+            border-bottom: none;
+        }
+
+        .inventory-items li.empty {
+            color: #666;
+            font-style: italic;
+            text-align: center;
+        }
+    </style>
+    <script>
+        async function collectCoin(element) {
+            // Generate a unique ID for this coin if it doesn't have one
+            if (!element.id) {
+                element.id = 'coin-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
+            }
+
+            // Check if this coin has already been collected
+            if (element.classList.contains('collected')) {
+                return; // Exit if already collected
+            }
+
+            // Visual feedback
+            element.style.transform = 'scale(1.2)';
+            element.style.transition = 'transform 0.2s';
+
+            try {
+                const response = await fetch('/earn_coin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({coin_id: element.id})
+                });
+
+                const data = await response.json();
+
+                if(data.success) {
+                    // Update all coin counters on the page
+                    document.querySelectorAll('.coin-count').forEach(counter => {
+                        counter.textContent = `Coins: ${data.new_coins}`;
+                    });
+
+                    // Mark coin as collected and make it disappear
+                    element.classList.add('collected');
+                    element.style.opacity = '0';
+                    element.style.pointerEvents = 'none'; // Disable further clicks
+
+                    // Add animation effect
+                    element.style.color = '#ffcc00'; // Make coin shine
+                    setTimeout(() => {
+                        element.style.transform = 'scale(1)';
+                        element.style.color = '';
+                    }, 200);
+                }
+            } catch (error) {
+                console.error('Error collecting coin:', error);
+                element.style.transform = 'scale(1)'; // Reset in case of error
+            }
+        }
+
+        // Function to initialize collected coins when page loads
+        async function initializeCollectedCoins() {
+            try {
+                const response = await fetch('/get_coins', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+
+                if(data.success && data.collected_coins) {
+                    // Hide all coins that have been collected
+                    document.querySelectorAll('.clickable-coin').forEach(coin => {
+                        if (data.collected_coins.includes(coin.id)) {
+                            coin.classList.add('collected');
+                            coin.style.opacity = '0';
+                            coin.style.pointerEvents = 'none';
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error initializing collected coins:', error);
+            }
+        }
+
+        // Call the initialization function when the page loads
+        document.addEventListener('DOMContentLoaded', initializeCollectedCoins);
+
+        // Inventory system
+        let serverInventory = {{ inventory | tojson }};
+        let inventoryOpen = false;
+
+        // Function to update inventory display
+        function updateInventoryDisplay() {
+            const inventoryItems = document.getElementById('inventoryItems');
+
+            if (serverInventory.length === 0) {
+                inventoryItems.innerHTML = '<li class="empty">No items collected yet</li>';
+            } else {
+                inventoryItems.innerHTML = serverInventory.map(item =>
+                    `<li>${item}</li>`
+                ).join('');
+            }
+        }
+
+        // Function to toggle inventory visibility
+        function toggleInventory() {
+            inventoryOpen = !inventoryOpen;
+            const inventoryPanel = document.getElementById('inventoryPanel');
+
+            if (inventoryOpen) {
+                inventoryPanel.classList.add('show');
+                updateInventoryDisplay();
+            } else {
+                inventoryPanel.classList.remove('show');
+            }
+        }
+
+        // Initialize inventory display
+        updateInventoryDisplay();
+
+        // Check for sleeping pills in inventory
+        let hasSleepingPills = false;
+
+        async function checkForSleepingPills() {
+            try {
+                const response = await fetch('/get_inventory', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success && data.inventory) {
+                    hasSleepingPills = data.inventory.some(item => 
+                        item.includes('Sleeping Pills') || item.includes('💊')
+                    );
+                    
+                    if (hasSleepingPills) {
+                        document.getElementById('pillsUseBtn').classList.add('visible');
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking for pills:', error);
+            }
+        }
+
+        function useSleepingPills() {
+            if (!hasSleepingPills) return;
+
+            // Show dream overlay
+            const overlay = document.getElementById('dreamOverlay');
+            overlay.classList.add('active');
+
+            // Redirect to dream world after animation
+            setTimeout(() => {
+                window.location.href = '/dream-world';
+            }, 3000);
+        }
+
+        // Check for pills on page load
+        checkForSleepingPills();
+    </script>
+</head>
+<body>
+    <!-- Dream Overlay -->
+    <div class="dream-overlay" id="dreamOverlay">
+        <div class="dream-text">
+            <p>The pills take effect...</p>
+            <p>Your vision blurs...</p>
+            <p>You drift into sleep...</p>
+            <p style="font-size: 0.7em; margin-top: 30px; opacity: 0.8;">Entering the Dream World...</p>
+        </div>
+    </div>
+
+    <!-- Sleeping Pills Use Button -->
+    <div class="pills-use-container">
+        <button class="pills-use-btn" id="pillsUseBtn" onclick="useSleepingPills()">
+            💊 Use Sleeping Pills
+        </button>
+    </div>
+
+    <!-- Inventory button -->
+    <button class="inventory-btn" id="inventoryBtn" onclick="toggleInventory()">🎒 INVENTORY</button>
+    <div class="inventory-panel" id="inventoryPanel">
+        <h4>📦 Your Inventory</h4>
+        <ul class="inventory-items" id="inventoryItems">
+            <li class="empty">Loading...</li>
+        </ul>
+    </div>
+
+    <!-- Secret clickable corner -->
+    <div class="secret-corner" onclick="window.location.href='/sd--_dasd+!'"></div>
+
+    <div class="container">
+        <header>
+            <h1>🕰️ Memory Lane</h1>
+            <p>You found the secret path... where forgotten memories and hidden secrets await...</p>
+        </header>
+
+        <main>
+            <h2>Welcome to memory lane!</h2>
+            <p>Where forgotten memes live, and every corner holds a piece of our digital past... 🕰️✨</p>
+
+            <div class="code-container">
+                <h3>Enter Secret Code:</h3>
+                <form action="/secret" method="post">
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="codeInput" name="code" placeholder="Enter the secret code..." required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Submit Code</button>
+                </form>
+
+                {% if error %}
+                    <div class="error-message">{{ error }}</div>
+                {% endif %}
+            </div>
+
+            <a href="/" class="btn btn-primary">Go Back to Home</a>
+        </main>
+
+        <footer style="background-color: rgba(0,0,0,0.6); color: #a0a0a0; text-align: center; padding: 30px 20px; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 10px; margin-top: 30px;">
+            <p>&copy; 2026 My Website. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

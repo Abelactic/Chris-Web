@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>4̶0̶4̶ ̶N̶o̶t̶ ̶F̶o̶u̶n̶d̶</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a0a0a 50%, #0a0a0a 100%);
+            color: #444;
+            min-height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(139, 0, 0, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 70% 80%, rgba(50, 50, 50, 0.1) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .cracked-wall {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(90deg, transparent 0, transparent 49px, rgba(0,0,0,0.3) 50px),
+                repeating-linear-gradient(0deg, transparent 0, transparent 49px, rgba(0,0,0,0.3) 50px);
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        .ruin-container {
+            position: relative;
+            z-index: 5;
+            padding: 50px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .broken-header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .broken-header h1 {
+            font-size: 4em;
+            color: #2a2a2a;
+            position: relative;
+            animation: crumble 3s infinite;
+        }
+
+        .broken-header h1::before {
+            content: attr(data-text);
+            position: absolute;
+            left: 2px;
+            text-shadow: -1px 0 #3a0a0a;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-1 2s infinite linear alternate-reverse;
+        }
+
+        .broken-header h1::after {
+            content: attr(data-text);
+            position: absolute;
+            left: -2px;
+            text-shadow: -1px 0 #0a0a3a;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-2 3s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-1 {
+            0% { clip: rect(30px, 9999px, 10px, 0); }
+            20% { clip: rect(85px, 9999px, 90px, 0); }
+            40% { clip: rect(20px, 9999px, 60px, 0); }
+            60% { clip: rect(60px, 9999px, 30px, 0); }
+            80% { clip: rect(10px, 9999px, 50px, 0); }
+            100% { clip: rect(70px, 9999px, 80px, 0); }
+        }
+
+        @keyframes glitch-2 {
+            0% { clip: rect(15px, 9999px, 60px, 0); }
+            20% { clip: rect(90px, 9999px, 10px, 0); }
+            40% { clip: rect(35px, 9999px, 75px, 0); }
+            60% { clip: rect(70px, 9999px, 20px, 0); }
+            80% { clip: rect(5px, 9999px, 45px, 0); }
+            100% { clip: rect(55px, 9999px, 95px, 0); }
+        }
+
+        @keyframes crumble {
+            0%, 100% { transform: translate(0, 0); }
+            25% { transform: translate(-1px, 1px); }
+            50% { transform: translate(1px, -1px); }
+            75% { transform: translate(-1px, -1px); }
+        }
+
+        .rubble {
+            font-size: 1.5em;
+            color: #3a3a3a;
+            margin: 30px 0;
+            padding: 20px;
+            border-left: 3px solid #2a2a2a;
+            background: rgba(20, 20, 20, 0.5);
+        }
+
+        .broken-text {
+            font-size: 1.2em;
+            line-height: 2;
+            color: #333;
+        }
+
+        .broken-text span {
+            text-decoration: line-through;
+            color: #555;
+        }
+
+        .decay-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: rgba(10, 10, 10, 0.6);
+            border: 1px solid #1a1a1a;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .decay-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, transparent 30%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+        }
+
+        .corrupted-text {
+            font-family: 'Courier New', monospace;
+            color: #2a2a2a;
+            background: #0a0a0a;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px dashed #1a1a1a;
+        }
+
+        .missing-content {
+            width: 100%;
+            height: 150px;
+            background: #050505;
+            border: 2px solid #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #1a1a1a;
+            font-size: 0.9em;
+            margin: 20px 0;
+        }
+
+        .dust-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(100, 100, 100, 0.5);
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-10vh) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh) translateX(20px); opacity: 0; }
+        }
+
+        .exit-link {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 15px 30px;
+            background: #0a0a0a;
+            color: #3a3a3a;
+            text-decoration: none;
+            border: 1px solid #1a1a1a;
+            transition: all 0.3s;
+            font-size: 1.1em;
+        }
+
+        .exit-link:hover {
+            background: #1a1a1a;
+            color: #555;
+            border-color: #2a2a2a;
+        }
+
+        .center-text {
+            text-align: center;
+        }
+
+        .note-box {
+            margin-top: 40px;
+            padding: 20px;
+            border: 1px solid #4a4a4a;
+            background: rgba(20, 20, 20, 0.8);
+            font-size: 14px;
+            font-style: italic;
+            color: #b0b0b0;
+            text-align: center;
+        }
+
+        .clickable-note {
+            margin-top: 30px;
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border: 1px solid #3a3a3a;
+            border-radius: 2px;
+            cursor: pointer;
+            display: inline-block;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .clickable-note:hover {
+            border-color: #5a5a5a;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7), inset 0 0 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .clickable-note .note-label {
+            color: #8a8a8a;
+            font-size: 14px;
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 5px rgba(138, 138, 138, 0.3);
+        }
+
+        .clickable-note .note-content {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #3a3a3a;
+            color: #c0c0c0;
+            font-size: 13px;
+            line-height: 1.8;
+            text-shadow: 0 0 3px rgba(192, 192, 192, 0.2);
+        }
+
+        .clickable-note.open .note-content {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .clickable-note.open .note-label::after {
+            content: ' [-]';
+        }
+
+        .clickable-note .note-label::after {
+            content: ' [+]';
+        }
+
+        .fading-text {
+            animation: fade 4s infinite;
+        }
+
+        @keyframes fade {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cracked-wall"></div>
+    <div class="dust-particles" id="particles"></div>
+
+    <div class="ruin-container">
+        <div class="broken-header">
+            <h1 data-text="P̴a̴g̴e̴ ̴R̴u̴i̴n̴s̴">P̴a̴g̴e̴ ̴R̴u̴i̴n̴s̴</h1>
+        </div>
+
+        <div class="rubble">
+            <p class="broken-text">
+                y̵øµ ̶h̶a̶v̶e̶ ̶f̶øµ̶n̶d̶ ̶t̶h̶e̶ ̶r̶µ̶i̶n̶s̶...<br><br>
+                t̷h̸i̷s̷ ̷p̷a̷g̷e̷ ̷f̷e̷l̷l̷ ̷i̷n̷t̷o̷ ̷d̷e̷c̷a̷y̷...<br><br>
+                <span>n̶o̶t̶h̶i̶n̶g̶ ̶r̶e̶m̶a̶i̶n̶s̶ ̶b̶µ̶t̶ ̶d̶µ̶s̶t̶ ̶a̶n̶d̶ ̶m̶e̶m̶ø̶r̶i̶e̶s̶</span>
+            </p>
+        </div>
+
+        <div class="decay-section">
+            <p class="corrupted-text">
+                h̷e̷r̷e̷ ̷l̷i̷e̷s̷ ̷t̷h̷e̷ ̷c̷ø̷n̷t̷e̷n̷t̷ ̷t̷h̷a̷t̷ ̷n̷e̷v̷e̷r̷ ̷w̷a̷s̷...<br>
+                l̷ø̷s̷t̷ ̷t̷ø̷ ̷t̷i̷m̷e̷ ̷a̷n̷d̷ ̷n̷e̷g̷l̷e̷c̷t̷...
+            </p>
+
+            <div class="missing-content">
+                [ c̶o̶n̶t̶e̶n̶t̶ ̶l̶o̶s̶t̶ ̶t̶o̶ ̶d̶e̶c̶a̶y̶ ]
+            </div>
+
+            <p class="broken-text">
+                <span>This section used to contain something important</span><br>
+                n̶ø̶w̶ ̶i̶t̶'̶s̶ ̶j̶µ̶s̶t̶ ̶v̶ø̶i̶d̶...
+            </p>
+        </div>
+
+        <div class="rubble">
+            <p class="fading-text">
+                MTAvMjQvMjU=<br>
+                WkDr<br>
+                Papa Yankee Tango Hotel Oscar November<br>
+                OERNQ<br>
+                denodnaba<br>
+                03/15/25
+            </p>
+        </div>
+
+        <div class="center-text">
+            <a href="/newpage" class="exit-link">l̶e̶a̶v̶e̶ ̶t̶h̶i̶s̶ ̶p̶l̶a̶c̶e̶ →</a>
+        </div>
+
+        <div style="text-align: center;">
+            <div class="clickable-note" onclick="this.classList.toggle('open')">
+                <span class="note-label">Old Note</span>
+                <div class="note-content">
+                    This is all that I could leave, this text might seem pointless but it is not. I don't want HIM to find me, so I encrypted this. Decode it and get out while you still can.<br>
+                    <strong>-E13</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create falling dust particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 50; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 5 + 's';
+            particle.style.animationDuration = (Math.random() * 5 + 5) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Random text corruption
+        setInterval(() => {
+            const texts = document.querySelectorAll('.broken-text, .corrupted-text');
+            const randomText = texts[Math.floor(Math.random() * texts.length)];
+            const original = randomText.innerHTML;
+            // Add extra corruption temporarily
+            randomText.style.textShadow = '2px 0 #3a0a0a, -2px 0 #0a0a3a';
+            setTimeout(() => {
+                randomText.style.textShadow = 'none';
+            }, 100);
+        }, 2000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E13'S TRIAL - THE SIGNAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.2), rgba(0,0,0,0.2) 1px, transparent 1px, transparent 2px);
+            pointer-events: none;
+            z-index: 999;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+            z-index: 998;
+        }
+        .container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; position: relative; z-index: 10; }
+        
+        /* UI Elements */
+        .attempts-meter {
+            position: fixed; top: 20px; left: 20px;
+            font-family: 'VT323', monospace; font-size: 1.3em;
+            color: #ffaa00; z-index: 100;
+        }
+        .bars-container {
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%); width: 400px; z-index: 100;
+        }
+        .bar-label { font-family: 'VT323', monospace; font-size: 1em; color: #888; margin-bottom: 5px; letter-spacing: 2px; }
+        .bar-container { width: 100%; height: 25px; background: #1a1a1a; border: 2px solid #333; border-radius: 3px; overflow: hidden; }
+        .bar-fill { height: 100%; width: 100%; transition: width 0.3s; }
+        .integrity-fill { background: linear-gradient(90deg, #00aa00, #00ff00); box-shadow: 0 0 10px rgba(0,255,0,0.5); }
+        
+        /* Panels */
+        .frequency-panel, .pattern-panel, .beacon-panel, .choice-panel {
+            display: none; max-width: 700px; margin: 80px auto;
+            padding: 30px; background: rgba(0,20,0,0.9);
+            border: 2px solid #00aa00; border-radius: 10px;
+        }
+        .frequency-panel.active, .pattern-panel.active, .beacon-panel.active, .choice-panel.active { display: block; }
+        
+        .frequency-title {
+            font-family: 'VT323', monospace; font-size: 2em;
+            color: #00ff00; text-align: center; margin-bottom: 20px; letter-spacing: 5px;
+        }
+        
+        /* Frequency Sliders */
+        .frequency-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.5); border-radius: 5px;
+        }
+        .frequency-label { font-family: 'Share Tech Mono', monospace; font-size: 1.1em; color: #00ff00; width: 150px; }
+        .frequency-slider { flex: 1; margin: 0 20px; }
+        .frequency-slider input[type="range"] {
+            width: 100%; height: 10px; background: #1a1a1a;
+            border: 2px solid #00aa00; border-radius: 5px; outline: none; -webkit-appearance: none;
+        }
+        .frequency-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 25px; height: 25px; background: #00ff00;
+            border: 2px solid #00aa00; border-radius: 50%; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,255,0,0.5);
+        }
+        .frequency-value {
+            font-family: 'VT323', monospace; font-size: 1.5em;
+            color: #00ff00; width: 80px; text-align: right;
+        }
+        .frequency-value.matched { color: #00ffff; text-shadow: 0 0 10px rgba(0,255,255,0.8); }
+        .frequency-value.close { color: #ffff00; text-shadow: 0 0 10px rgba(255,255,0,0.8); }
+        .frequency-value.warm { color: #ffaa00; text-shadow: 0 0 10px rgba(255,170,0,0.8); }
+        .frequency-value.cold { color: #ff4444; text-shadow: 0 0 10px rgba(255,68,68,0.8); }
+        
+        .submit-btn {
+            display: block; width: 100%; padding: 15px; margin-top: 30px;
+            font-family: 'VT323', monospace; font-size: 1.5em; color: #fff;
+            background: linear-gradient(145deg, #00aa00, #008800);
+            border: 2px solid #00ff00; border-radius: 8px;
+            cursor: pointer; letter-spacing: 3px; transition: all 0.3s;
+        }
+        .submit-btn:hover {
+            background: linear-gradient(145deg, #00cc00, #00aa00);
+            box-shadow: 0 0 20px rgba(0,255,0,0.5);
+        }
+        
+        /* Pattern Grid */
+        .pattern-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 15px; margin: 30px auto; max-width: 400px;
+        }
+        .pattern-btn {
+            aspect-ratio: 1; background: rgba(0,50,0,0.5);
+            border: 2px solid #00aa00; border-radius: 10px;
+            cursor: pointer; transition: all 0.2s; font-size: 2em;
+        }
+        .pattern-btn:hover { border-color: #00ff00; background: rgba(0,80,0,0.5); }
+        .pattern-btn.lit { background: rgba(0,255,0,0.6); border-color: #00ff00; box-shadow: 0 0 20px rgba(0,255,0,0.8); }
+        .pattern-btn.correct { background: rgba(0,255,255,0.6); border-color: #00ffff; }
+        .pattern-btn.wrong { background: rgba(255,0,0,0.6); border-color: #ff0000; }
+        .pattern-info { font-family: 'VT323', monospace; font-size: 1.5em; color: #00ff00; margin: 20px 0; text-align: center; }
+        
+        /* Beacon Power Cells */
+        .beacon-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 20px; margin: 30px 0;
+        }
+        .power-cell {
+            background: rgba(0,50,0,0.5); border: 2px solid #00aa00;
+            border-radius: 10px; padding: 20px; text-align: center;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .power-cell:hover { border-color: #00ff00; background: rgba(0,80,0,0.5); }
+        .power-cell.powered {
+            background: rgba(0,255,0,0.3); border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0,255,0,0.5);
+        }
+        .power-cell .icon { font-size: 3em; margin-bottom: 10px; }
+        .power-cell .status { font-family: 'Share Tech Mono', monospace; font-size: 1em; color: #ff4444; }
+        .power-cell .status.online { color: #00ff00; }
+        .beacon-progress {
+            width: 100%; height: 30px; background: #1a1a1a;
+            border: 2px solid #00aa00; border-radius: 5px; overflow: hidden; margin: 20px 0;
+        }
+        .beacon-progress-bar {
+            height: 100%; background: linear-gradient(90deg, #00aa00, #00ff00);
+            width: 0%; transition: width 0.5s;
+        }
+        
+        /* Puzzle Modal */
+        .puzzle-modal {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+            z-index: 500; justify-content: center; align-items: center;
+        }
+        .puzzle-modal.active { display: flex; }
+        .puzzle-content {
+            background: rgba(0,20,0,0.95); border: 3px solid #00ff00;
+            border-radius: 15px; padding: 40px; max-width: 500px;
+            text-align: center; position: relative;
+        }
+        .puzzle-close {
+            position: absolute; top: 15px; right: 15px;
+            background: transparent; border: 2px solid #ff4444;
+            color: #ff4444; padding: 5px 15px; font-family: 'VT323', monospace;
+            font-size: 1.2em; cursor: pointer; border-radius: 5px;
+        }
+        .puzzle-close:hover { background: #ff4444; color: #000; }
+        
+        /* Color Match Puzzle */
+        .color-pattern { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .color-btn { aspect-ratio: 1; border: 2px solid #333; border-radius: 5px; cursor: pointer; transition: all 0.2s; }
+        .color-btn:hover { transform: scale(1.1); }
+        
+        /* Reaction Puzzle */
+        .reaction-zone {
+            width: 100%; height: 50px; background: linear-gradient(90deg, #ff0000, #ffff00, #00ff00, #ffff00, #ff0000);
+            border: 2px solid #00ff00; border-radius: 5px; margin: 20px 0; position: relative; cursor: pointer;
+        }
+        .reaction-marker {
+            position: absolute; top: 0; left: 50%; width: 4px; height: 100%;
+            background: #fff; transform: translateX(-50%);
+        }
+        .reaction-bar {
+            position: absolute; top: 0; left: 0; width: 20%; height: 100%;
+            background: rgba(0,255,0,0.5); animation: reactionMove 2s ease-in-out infinite;
+        }
+        @keyframes reactionMove { 0%, 100% { left: 0; } 50% { left: 80%; } }
+        
+        /* Click Puzzle */
+        .click-target {
+            width: 100px; height: 100px; background: #00ff00;
+            border: 3px solid #00aa00; border-radius: 50%;
+            margin: 20px auto; cursor: pointer; transition: all 0.1s;
+        }
+        .click-target:active { transform: scale(0.9); background: #00aa00; }
+        .click-counter { font-family: 'VT323', monospace; font-size: 2em; color: #00ff00; margin: 10px 0; }
+        
+        /* Number Memory Puzzle */
+        .number-memory { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0; }
+        .number-btn {
+            padding: 20px; font-family: 'VT323', monospace; font-size: 2em;
+            background: rgba(0,50,0,0.5); border: 2px solid #00aa00;
+            border-radius: 5px; color: #00ff00; cursor: pointer; transition: all 0.2s;
+        }
+        .number-btn:hover { background: rgba(0,80,0,0.5); border-color: #00ff00; }
+        
+        /* Choice Buttons */
+        .choice-buttons { display: flex; gap: 20px; justify-content: center; margin-top: 20px; }
+        .choice-btn {
+            padding: 20px 40px; font-family: 'VT323', monospace; font-size: 1.5em;
+            border: 2px solid #00aa00; border-radius: 8px; cursor: pointer; letter-spacing: 2px; transition: all 0.3s;
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a); color: #00ff00;
+        }
+        .choice-btn:hover {
+            background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+            box-shadow: 0 0 20px rgba(0,255,0,0.4);
+            border-color: #00ff00;
+        }
+        
+        /* Dialogue */
+        .dialogue-box {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+            width: 80%; max-width: 700px; background: rgba(0,0,0,0.9);
+            border: 2px solid #00ff00; padding: 20px; border-radius: 10px;
+            z-index: 200; display: none;
+        }
+        .dialogue-box.active { display: block; }
+        .dialogue-text { font-family: 'Share Tech Mono', monospace; font-size: 1.1em; line-height: 1.8; color: #ccc; }
+        .dialogue-text .highlight { color: #00ff00; }
+        .dialogue-text .e13 { color: #00ff00; }
+        .dialogue-text .l14 { color: #8b008b; }
+        
+        /* Start/Result Screens */
+        .start-screen, .result-screen {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+            z-index: 300; justify-content: center; align-items: center; flex-direction: column; text-align: center;
+        }
+        .start-screen.active, .result-screen.active { display: flex; }
+        .start-title, .result-title {
+            font-family: 'VT323', monospace; font-size: 4em;
+            color: #00ff00; text-transform: uppercase; letter-spacing: 15px;
+            margin-bottom: 30px; text-shadow: 0 0 30px rgba(0,255,0,0.8);
+        }
+        .result-title.success { color: #00ff00; text-shadow: 0 0 50px rgba(0,255,0,0.8); }
+        .result-title.fail { color: #ff0000; text-shadow: 0 0 50px rgba(255,0,0,0.8); }
+        .start-message, .result-message {
+            font-family: 'Share Tech Mono', monospace; font-size: 1.2em;
+            color: #888; max-width: 600px; line-height: 2; margin-bottom: 40px;
+        }
+        .start-btn, .leave-btn {
+            font-family: 'VT323', monospace; font-size: 2em; color: #fff;
+            background: linear-gradient(145deg, #00aa00, #008800);
+            border: 3px solid #00ff00; padding: 20px 60px; border-radius: 10px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 5px;
+            box-shadow: 0 0 30px rgba(0,255,0,0.5); transition: all 0.3s;
+        }
+        .start-btn:hover, .leave-btn:hover {
+            background: linear-gradient(145deg, #00cc00, #00aa00);
+            box-shadow: 0 0 50px rgba(0,255,0,0.8); transform: scale(1.05);
+        }
+        
+        /* Screen effects */
+        .screen-flash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: white; opacity: 0; pointer-events: none; z-index: 1000; transition: opacity 0.1s;
+        }
+        .screen-flash.green { background: #00ff00; }
+        .screen-flash.red { background: #ff0000; }
+        
+        /* Spin animation for maze player */
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        /* Pulse animation for signal dot */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
+        }
+        
+        .glitch-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 997; opacity: 0; transition: opacity 0.3s;
+        }
+        .glitch-overlay.active { opacity: 1; animation: glitchShake 0.1s infinite; }
+        @keyframes glitchShake {
+            0%, 100% { transform: translate(0); }
+            25% { transform: translate(-5px, 5px); }
+            50% { transform: translate(5px, -5px); }
+            75% { transform: translate(-5px, -5px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-flash" id="screenFlash"></div>
+    <div class="glitch-overlay" id="glitchOverlay"></div>
+    
+    <div class="attempts-meter" id="attemptsMeter">ATTEMPTS: <span id="attemptsLeft">8</span></div>
+    
+    <div class="bars-container">
+        <div class="bar-label">TOWER INTEGRITY</div>
+        <div class="bar-container">
+            <div class="bar-fill integrity-fill" id="integrityBar"></div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- PHASE 1: Frequency Tuning -->
+        <div class="frequency-panel" id="frequencyPanel">
+            <h2 class="frequency-title">📡 TUNE THE SIGNAL</h2>
+            <p style="color: #888; text-align: center; margin-bottom: 20px;">Match each frequency to decode L14's final transmission...</p>
+            <div class="frequency-row">
+                <span class="frequency-label">FREQUENCY A</span>
+                <div class="frequency-slider"><input type="range" id="freqA" min="1" max="10" value="1"></div>
+                <span class="frequency-value" id="valueA">1</span>
+            </div>
+            <div class="frequency-row">
+                <span class="frequency-label">FREQUENCY B</span>
+                <div class="frequency-slider"><input type="range" id="freqB" min="1" max="10" value="1"></div>
+                <span class="frequency-value" id="valueB">1</span>
+            </div>
+            <div class="frequency-row">
+                <span class="frequency-label">FREQUENCY C</span>
+                <div class="frequency-slider"><input type="range" id="freqC" min="1" max="10" value="1"></div>
+                <span class="frequency-value" id="valueC">1</span>
+            </div>
+            <button class="submit-btn" onclick="submitFrequencies()">TRANSMIT</button>
+        </div>
+        
+        <!-- PHASE 2: Pattern Memory -->
+        <div class="pattern-panel" id="patternPanel">
+            <h2 class="frequency-title">🔍 DECRYPT THE PATTERN</h2>
+            <p style="color: #888; text-align: center; margin-bottom: 20px;">Watch the signal sequence... then repeat it!</p>
+            <div class="pattern-info">SEQUENCE: <span id="patternRound">1</span>/5</div>
+            <div class="pattern-grid" id="patternGrid"></div>
+            <p style="color: #888; text-align: center; margin-top: 15px;">Click the buttons in the same order as they lit up!</p>
+        </div>
+        
+        <!-- PHASE 3: Beacon Powering -->
+        <div class="beacon-panel" id="beaconPanel">
+            <h2 class="frequency-title">🔋 POWER THE BEACON</h2>
+            <p style="color: #888; text-align: center; margin-bottom: 20px;">Complete mini-puzzles to activate each power cell!</p>
+            <div class="beacon-progress"><div class="beacon-progress-bar" id="beaconBar"></div></div>
+            <div class="beacon-grid" id="beaconGrid"></div>
+        </div>
+        
+        <!-- PHASE 4: Quiz -->
+        <div class="choice-panel" id="quizPanel">
+            <h2 class="frequency-title">💬 L14'S ECHO</h2>
+            <div class="choice-text" id="quizText"></div>
+            <div class="choice-buttons" id="quizButtons"></div>
+        </div>
+        
+        <!-- PHASE 5: The Choice -->
+        <div class="choice-panel" id="choicePanel">
+            <h2 class="frequency-title">🟢 THE FINAL TRANSMISSION</h2>
+            <div class="choice-text" id="choiceText"></div>
+            <div class="choice-buttons" id="choiceButtons"></div>
+        </div>
+    </div>
+    
+    <!-- Dialogue Box -->
+    <div class="dialogue-box" id="dialogueBox"><div class="dialogue-text" id="dialogueText"></div></div>
+    
+    <!-- Puzzle Modal -->
+    <div class="puzzle-modal" id="puzzleModal">
+        <div class="puzzle-content">
+            <button class="puzzle-close" onclick="closePuzzle()">✕</button>
+            <h3 class="puzzle-title" id="puzzleTitle"></h3>
+            <div id="puzzleContent"></div>
+        </div>
+    </div>
+    
+    <!-- Start Screen -->
+    <div class="start-screen active" id="startScreen">
+        <h1 class="start-title">E13'S SIGNAL TRIAL</h1>
+        <p class="start-message">
+            L14's final transmission is trapped in static.<br>
+            Their signal tower is under attack by corruption.<br>
+            You must decode their message.<br>
+            You must defend their legacy.<br><br>
+            <span class="highlight">Show them that some signals never die.</span>
+        </p>
+        <button class="start-btn" onclick="startGame()">BEGIN TRANSMISSION</button>
+    </div>
+    
+    <!-- Result Screen -->
+    <div class="result-screen" id="resultScreen">
+        <h1 class="result-title" id="resultTitle"></h1>
+        <p class="result-message" id="resultMessage"></p>
+        <button class="leave-btn" onclick="continueMission()">🟢 CONTINUE MISSION</button>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            phase: 0, attempts: 8, integrity: 100,
+            correctFrequencies: { a: 0, b: 0, c: 0 },
+            patternSequence: [], playerPattern: [], patternRound: 1,
+            beaconCells: [], beaconProgress: 0,
+            quizScore: 0, currentQuiz: 0
+        };
+        
+        const quizQuestions = [
+            { question: "E13: What was L14's final message?", answers: [{ text: "'Tell E13... I tried...'", correct: true }, { text: "'I hate you...'", correct: false }, { text: "'Save yourself...'", correct: false }] },
+            { question: "E13: Where did L14 make their sacrifice?", answers: [{ text: "Sector 3", correct: false }, { text: "Sector 5", correct: true }, { text: "Sector 7", correct: false }] },
+            { question: "E13: What did L14 fight against?", answers: [{ text: "The government", correct: false }, { text: "Aliens", correct: false }, { text: "The corruption", correct: true }] }
+        ];
+        
+        const beaconPuzzles = [
+            { name: 'Power Conduits', type: 'color', icon: '🔌' },
+            { name: 'Circuit Flow', type: 'reaction', icon: '⚡' },
+            { name: 'Signal Relay', type: 'click', icon: '📡' },
+            { name: 'Signal Maze', type: 'number', icon: '🌀' }
+        ];
+        
+        let gameInterval = null, puzzleInterval = null;
+        
+        // Initialize
+        document.addEventListener('keydown', (e) => { if(e.key==='Enter' && e.target.id==='pythonInput') runPythonCode(); });
+        
+        function startGame() {
+            document.getElementById('startScreen').classList.remove('active');
+            generateFrequencies();
+            startPhase1();
+        }
+        
+        function generateFrequencies() {
+            gameState.correctFrequencies = { a: Math.floor(Math.random()*10)+1, b: Math.floor(Math.random()*10)+1, c: Math.floor(Math.random()*10)+1 };
+            console.log('Debug - Correct:', gameState.correctFrequencies);
+        }
+        
+        // PHASE 1 - BEACON POWERING
+        function startPhase1() {
+            gameState.phase = 1;
+            document.getElementById('attemptsMeter').style.display = 'none';
+            document.getElementById('beaconPanel').classList.add('active');
+            gameState.beaconCells = [...beaconPuzzles];
+            gameState.beaconProgress = 0;
+            updateBeaconGrid();
+            showDialogue("E13: <span class='e13'>First, power the beacon! Complete each puzzle!</span>");
+        }
+        
+        function updateBeaconGrid() {
+            const grid = document.getElementById('beaconGrid'); grid.innerHTML = '';
+            gameState.beaconCells.forEach((cell, i) => {
+                const div = document.createElement('div');
+                div.className = 'power-cell' + (cell.powered ? ' powered' : '');
+                div.innerHTML = `<div class="icon">${cell.icon}</div><div>${cell.name}</div><div class="status ${cell.powered ? 'online' : 'offline'}">${cell.powered ? 'ONLINE' : 'OFFLINE'}</div>`;
+                if(!cell.powered) div.onclick = () => openPuzzle(i);
+                grid.appendChild(div);
+            });
+            document.getElementById('beaconBar').style.width = (gameState.beaconProgress * 25) + '%';
+        }
+        
+        function openPuzzle(index) {
+            const puzzle = gameState.beaconCells[index];
+            document.getElementById('puzzleTitle').textContent = puzzle.name;
+            const content = document.getElementById('puzzleContent');
+            content.innerHTML = '';
+            
+            if(puzzle.type === 'color') {
+                content.innerHTML = '<p>Connect the wires to their matching ports! DRAG from left to right!</p><div class="wire-puzzle" id="wirePuzzle"></div>';
+                const wireColors = [
+                    { color: '#ff4444', icon: '🔴' },
+                    { color: '#00ff00', icon: '🟢' },
+                    { color: '#4444ff', icon: '🔵' },
+                    { color: '#ffff00', icon: '🟡' },
+                    { color: '#00ffff', icon: '🔷' }
+                ];
+                const shuffledPorts = [...wireColors].sort(() => Math.random() - 0.5);
+                let connected = 0;
+                let isDragging = false;
+                let currentWire = null;
+                let currentWireIndex = -1;
+                const connectedWires = []; // Track which wires are already connected
+                const portElements = []; // Store port references for collision detection
+
+                const puzzleContainer = document.getElementById('wirePuzzle');
+                puzzleContainer.style.cssText = 'position:relative;width:100%;height:280px;background:rgba(0,30,0,0.5);border:2px solid #00aa00;border-radius:10px;overflow:hidden;';
+
+                // Create connection points
+                const wirePositions = [25, 70, 115, 160, 205];
+                const portPositions = shuffledPorts.map((_, i) => wirePositions[i]);
+
+                // Left side - Wires
+                wireColors.forEach((wire, i) => {
+                    const wireStart = document.createElement('div');
+                    wireStart.id = 'wireStart_' + i;
+                    wireStart.style.cssText = `position:absolute;left:10px;top:${wirePositions[i]-15}px;width:30px;height:30px;background:${wire.color};border:3px solid #fff;border-radius:50%;cursor:pointer;z-index:10;transition:all 0.3s;`;
+                    wireStart.dataset.index = i;
+                    wireStart.dataset.color = wire.color;
+                    wireStart.onmousedown = (e) => {
+                        e.preventDefault();
+                        startDrag(i, wire.color);
+                    };
+                    wireStart.ontouchstart = (e) => {
+                        e.preventDefault();
+                        startDrag(i, wire.color);
+                    };
+                    puzzleContainer.appendChild(wireStart);
+                });
+
+                // Right side - Ports
+                shuffledPorts.forEach((port, i) => {
+                    const portEnd = document.createElement('div');
+                    portEnd.id = 'portEnd_' + i;
+                    portEnd.style.cssText = `position:absolute;right:10px;top:${portPositions[i]-15}px;width:30px;height:30px;background:rgba(0,50,0,0.5);border:3px solid ${port.color};border-radius:50%;cursor:pointer;z-index:10;transition:all 0.3s;`;
+                    portEnd.dataset.color = port.color;
+                    portEnd.dataset.index = i;
+                    portEnd.innerHTML = `<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:0.8em;">${port.icon}</span>`;
+                    puzzleContainer.appendChild(portEnd);
+                    portElements.push({ element: portEnd, color: port.color, index: i, position: portPositions[i] });
+                });
+
+                // SVG for drawing lines
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;';
+                puzzleContainer.appendChild(svg);
+
+                function startDrag(index, color) {
+                    if(connectedWires.includes(index)) return; // Already connected
+                    isDragging = true;
+                    currentWireIndex = index;
+                    currentWire = color;
+                    // Don't draw initial line - wait for mousemove
+                }
+
+                function drawLine(svg, x1, y1, x2, y2, color) {
+                    svg.innerHTML = '';
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x1);
+                    line.setAttribute('y1', y1);
+                    line.setAttribute('x2', x2);
+                    line.setAttribute('y2', y2);
+                    line.setAttribute('stroke', color);
+                    line.setAttribute('stroke-width', '5');
+                    line.setAttribute('stroke-linecap', 'round');
+                    line.style.filter = `drop-shadow(0 0 5px ${color})`;
+                    svg.appendChild(line);
+                }
+
+                puzzleContainer.addEventListener('mousemove', (e) => {
+                    if(!isDragging || !currentWire) return;
+                    const rect = puzzleContainer.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    drawLine(svg, 40, wirePositions[currentWireIndex], x, y, currentWire);
+                });
+
+                puzzleContainer.addEventListener('mouseup', (e) => {
+                    if(!isDragging || !currentWire) return;
+                    
+                    const rect = puzzleContainer.getBoundingClientRect();
+                    const mouseY = e.clientY - rect.top;
+                    
+                    // Check collision with ports
+                    let connected = false;
+                    portElements.forEach((port) => {
+                        if(connected) return;
+                        if(connectedWires.includes(currentWireIndex)) return;
+
+                        const portY = port.position;
+                        const portX = rect.width - 25; // right: 10px + half width
+                        const distance = Math.abs(mouseY - portY);
+
+                        // Check if we're close to this port (within 15px - more precise!)
+                        if(distance < 15 && currentWire === port.color) {
+                            // Success!
+                            const permanentLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                            permanentLine.setAttribute('x1', '40');
+                            permanentLine.setAttribute('y1', wirePositions[currentWireIndex].toString());
+                            permanentLine.setAttribute('x2', (rect.width - 40).toString());
+                            permanentLine.setAttribute('y2', port.position.toString());
+                            permanentLine.setAttribute('stroke', currentWire);
+                            permanentLine.setAttribute('stroke-width', '5');
+                            permanentLine.setAttribute('stroke-linecap', 'round');
+                            permanentLine.style.filter = `drop-shadow(0 0 10px ${currentWire})`;
+                            svg.appendChild(permanentLine);
+
+                            connectedWires.push(currentWireIndex);
+
+                            const wireStart = document.getElementById('wireStart_' + currentWireIndex);
+                            if(wireStart) {
+                                wireStart.style.opacity = '0.3';
+                                wireStart.style.pointerEvents = 'none';
+                            }
+
+                            port.element.style.opacity = '0.5';
+                            port.element.style.pointerEvents = 'none';
+                            port.element.style.background = currentWire;
+                            port.element.style.boxShadow = `0 0 15px ${currentWire}`;
+
+                            isDragging = false;
+                            currentWire = null;
+                            currentWireIndex = -1;
+
+                            // Check if ALL wires are connected (5 total)
+                            if(connectedWires.length >= 5) {
+                                setTimeout(() => { closePuzzle(); completePuzzle(index); }, 800);
+                            }
+                        }
+                    });
+                    
+                    // If not connected, clear the line
+                    if(!connected && isDragging) {
+                        isDragging = false;
+                        currentWire = null;
+                        currentWireIndex = -1;
+                        svg.innerHTML = '';
+                    }
+                });
+            } else if(puzzle.type === 'reaction') {
+                // POWER ROUTER PUZZLE - Click LEFT/RIGHT buttons on each row to rotate all panels in that row!
+                content.innerHTML = '<p>Click ◀ or ▶ on each row to rotate all 3 panels together. Create a path from POWER (top) to OUTPUT (bottom)!</p><div class="power-router" id="powerRouter"></div>';
+                
+                // Store puzzle index for completion callback
+                const puzzleIndex = index;
+                
+                // Check if power is available (wires must be connected first)
+                const colorPuzzleIndex = gameState.beaconCells.findIndex(c => c.type === 'color');
+                const powerAvailable = colorPuzzleIndex >= 0 && gameState.beaconCells[colorPuzzleIndex].powered;
+                
+                const routerContainer = document.getElementById('powerRouter');
+                routerContainer.style.cssText = 'position:relative;width:100%;max-width:400px;height:500px;background:rgba(0,20,0,0.8);border:3px solid #00aa00;border-radius:10px;margin:0 auto;padding:15px;';
+                
+                // Grid: 4 rows, 3 columns
+                const rows = 4;
+                const cols = 3;
+                const cellSize = 60;
+                const gap = 8;
+                
+                // Panel types (6 types that can connect in various ways)
+                const panelTypes = [
+                    { id: 0, name: 'vertical', paths: ['top', 'bottom'] },
+                    { id: 1, name: 'horizontal', paths: ['left', 'right'] },
+                    { id: 2, name: 'corner-TL', paths: ['top', 'left'] },
+                    { id: 3, name: 'corner-TR', paths: ['top', 'right'] },
+                    { id: 4, name: 'corner-BL', paths: ['bottom', 'left'] },
+                    { id: 5, name: 'corner-BR', paths: ['bottom', 'right'] }
+                ];
+                
+                // Initialize grid - each panel is independent (randomized each puzzle)
+                let grid = [];
+                for(let r = 0; r < rows; r++) {
+                    grid[r] = [];
+                    for(let c = 0; c < cols; c++) {
+                        grid[r][c] = Math.floor(Math.random() * panelTypes.length);
+                    }
+                }
+                
+                // Power source at top (column 1), output at bottom (column 1)
+                const powerCol = 1;
+                const outputCol = 1;
+                
+                // Create container for rows
+                const rowsContainer = document.createElement('div');
+                rowsContainer.style.cssText = 'display:flex;flex-direction:column;gap:10px;align-items:center;';
+                
+                // Create each row with LEFT/RIGHT controls (rotates entire row)
+                for(let r = 0; r < rows; r++) {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.style.cssText = 'display:flex;align-items:center;gap:10px;';
+                    
+                    // Left button (rotate row counter-clockwise)
+                    const leftBtn = document.createElement('button');
+                    leftBtn.style.cssText = 'width:30px;height:30px;background:#00aa00;border:2px solid #00ff00;border-radius:5px;color:#fff;font-size:16px;cursor:pointer;font-weight:bold;';
+                    leftBtn.textContent = '◀';
+                    leftBtn.onclick = () => rotateRow(r, -1, grid, panelTypes, renderGrid, checkPowerFlow);
+                    
+                    // Row panels display
+                    const rowGrid = document.createElement('div');
+                    rowGrid.id = 'rowGrid_' + r;
+                    rowGrid.style.cssText = 'display:grid;grid-template-columns:repeat('+cols+','+cellSize+'px);gap:'+gap+'px;';
+                    
+                    // Right button (rotate row clockwise)
+                    const rightBtn = document.createElement('button');
+                    rightBtn.style.cssText = 'width:30px;height:30px;background:#00aa00;border:2px solid #00ff00;border-radius:5px;color:#fff;font-size:16px;cursor:pointer;font-weight:bold;';
+                    rightBtn.textContent = '▶';
+                    rightBtn.onclick = () => rotateRow(r, 1, grid, panelTypes, renderGrid, checkPowerFlow);
+                    
+                    rowDiv.appendChild(leftBtn);
+                    rowDiv.appendChild(rowGrid);
+                    rowDiv.appendChild(rightBtn);
+                    rowsContainer.appendChild(rowDiv);
+                }
+                
+                // Power source indicator
+                const sourceDiv = document.createElement('div');
+                sourceDiv.style.cssText = 'text-align:center;color:' + (powerAvailable ? '#00ff00' : '#ff4444') + ';font-family:"VT323",monospace;font-size:1.2em;margin-bottom:5px;letter-spacing:3px;';
+                sourceDiv.innerHTML = powerAvailable ? '⚡ POWER ⚡' : '❌ NO POWER';
+                if(powerAvailable) sourceDiv.style.cssText += 'text-shadow:0 0 10px #00ff00;';
+                
+                // Power input arrow
+                const powerInputDiv = document.createElement('div');
+                powerInputDiv.style.cssText = 'text-align:center;color:' + (powerAvailable ? '#00ff00' : '#444') + ';font-size:1.5em;margin-bottom:5px;';
+                powerInputDiv.innerHTML = powerAvailable ? '⬇️' : '🚫';
+                
+                // Output indicator
+                const outputDiv = document.createElement('div');
+                outputDiv.id = 'outputIndicator';
+                outputDiv.style.cssText = 'text-align:center;color:#444;font-family:"VT323",monospace;font-size:1.2em;margin-top:10px;letter-spacing:3px;';
+                outputDiv.innerHTML = '🔒 OUTPUT';
+                
+                // Power output arrow
+                const powerOutputArrow = document.createElement('div');
+                powerOutputArrow.style.cssText = 'text-align:center;color:#444;font-size:1.5em;margin-top:5px;transition:all 0.3s;';
+                powerOutputArrow.id = 'powerOutputArrow';
+                powerOutputArrow.innerHTML = '⬇️';
+                
+                routerContainer.appendChild(sourceDiv);
+                routerContainer.appendChild(powerInputDiv);
+                routerContainer.appendChild(rowsContainer);
+                routerContainer.appendChild(outputDiv);
+                routerContainer.appendChild(powerOutputArrow);
+                
+                function renderGrid() {
+                    for(let r = 0; r < rows; r++) {
+                        const rowGrid = document.getElementById('rowGrid_' + r);
+                        rowGrid.innerHTML = '';
+                        for(let c = 0; c < cols; c++) {
+                            const cell = document.createElement('div');
+                            cell.id = 'cell_'+r+'_'+c;
+                            cell.style.cssText = 'width:'+cellSize+'px;height:'+cellSize+'px;background:rgba(0,30,0,0.8);border:2px solid #004400;border-radius:5px;position:relative;transition:all 0.3s;';
+                            
+                            const panel = panelTypes[grid[r][c]];
+                            const svgNS = 'http://www.w3.org/2000/svg';
+                            const svg = document.createElementNS(svgNS, 'svg');
+                            svg.setAttribute('width', cellSize);
+                            svg.setAttribute('height', cellSize);
+                            
+                            const centerX = cellSize/2;
+                            const centerY = cellSize/2;
+                            const dimLineStyle = 'stroke:#006600;stroke-width:6;stroke-linecap:round;';
+                            
+                            if(panel.paths.includes('top')) {
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.id = 'line_'+r+'_'+c+'_top';
+                                line.setAttribute('x1', centerX);
+                                line.setAttribute('y1', 0);
+                                line.setAttribute('x2', centerX);
+                                line.setAttribute('y2', centerY);
+                                line.setAttribute('style', dimLineStyle);
+                                svg.appendChild(line);
+                            }
+                            if(panel.paths.includes('bottom')) {
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.id = 'line_'+r+'_'+c+'_bottom';
+                                line.setAttribute('x1', centerX);
+                                line.setAttribute('y1', centerY);
+                                line.setAttribute('x2', centerX);
+                                line.setAttribute('y2', cellSize);
+                                line.setAttribute('style', dimLineStyle);
+                                svg.appendChild(line);
+                            }
+                            if(panel.paths.includes('left')) {
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.id = 'line_'+r+'_'+c+'_left';
+                                line.setAttribute('x1', 0);
+                                line.setAttribute('y1', centerY);
+                                line.setAttribute('x2', centerX);
+                                line.setAttribute('y2', centerY);
+                                line.setAttribute('style', dimLineStyle);
+                                svg.appendChild(line);
+                            }
+                            if(panel.paths.includes('right')) {
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.id = 'line_'+r+'_'+c+'_right';
+                                line.setAttribute('x1', centerX);
+                                line.setAttribute('y1', centerY);
+                                line.setAttribute('x2', cellSize);
+                                line.setAttribute('y2', centerY);
+                                line.setAttribute('style', dimLineStyle);
+                                svg.appendChild(line);
+                            }
+                            
+                            cell.appendChild(svg);
+                            rowGrid.appendChild(cell);
+                        }
+                    }
+                }
+                
+                renderGrid();
+                
+                function rotateRow(row, direction, grid, panelTypes, renderGrid, checkPowerFlow) {
+                    // Rotate ALL panels in this row together
+                    for(let c = 0; c < cols; c++) {
+                        grid[row][c] = (grid[row][c] + direction + panelTypes.length) % panelTypes.length;
+                    }
+                    renderGrid();
+                    checkPowerFlow();
+                }
+                
+                function checkPowerFlow() {
+                    // No power available yet - wires not connected!
+                    if(!powerAvailable) {
+                        console.log('NO POWER AVAILABLE - Connect Power Conduits first!');
+                        // Reset all lines to dim (no power)
+                        for(let r = 0; r < rows; r++) {
+                            for(let c = 0; c < cols; c++) {
+                                const cell = document.getElementById('cell_'+r+'_'+c);
+                                if(cell) {
+                                    cell.style.borderColor = '#004400';
+                                    cell.style.boxShadow = 'none';
+                                }
+                            }
+                        }
+                        outputDiv.style.color = '#ff4444';
+                        outputDiv.style.textShadow = 'none';
+                        outputDiv.innerHTML = '❌ NO POWER';
+                        powerOutputArrow.style.color = '#444';
+                        return;
+                    }
+                    
+                    console.log('=== CHECKING POWER FLOW ===');
+                    
+                    // Reset all lines to dim
+                    for(let r = 0; r < rows; r++) {
+                        for(let c = 0; c < cols; c++) {
+                            const cell = document.getElementById('cell_'+r+'_'+c);
+                            if(cell) {
+                                cell.style.borderColor = '#004400';
+                                cell.style.boxShadow = 'none';
+                            }
+                            ['top', 'bottom', 'left', 'right'].forEach(dir => {
+                                const line = document.getElementById('line_'+r+'_'+c+'_'+dir);
+                                if(line) {
+                                    line.setAttribute('style', 'stroke:#006600;stroke-width:6;stroke-linecap:round;');
+                                }
+                            });
+                        }
+                    }
+                    
+                    // Reset output indicators
+                    outputDiv.style.color = '#444';
+                    outputDiv.style.textShadow = 'none';
+                    powerOutputArrow.style.color = '#444';
+                    powerOutputArrow.style.textShadow = 'none';
+                    
+                    // Trace power - START from first row at power column, entering from TOP
+                    let queue = [{r: 0, c: powerCol, from: 'top'}];
+                    let visited = new Set();
+                    
+                    while(queue.length > 0) {
+                        const {r, c, from} = queue.shift();
+                        const key = r+','+c+','+from;
+                        if(visited.has(key)) continue;
+                        visited.add(key);
+                        
+                        console.log('Checking position:', {r, c, from});
+                        
+                        if(r >= 0 && r < rows && c >= 0 && c < cols) {
+                            const panelIndex = grid[r][c];
+                            const panel = panelTypes[panelIndex];
+                            console.log('Panel at', r, c, 'is type', panelIndex, panel.name, 'with paths:', panel.paths);
+                            
+                            if(!panel.paths.includes(from)) {
+                                console.log('Panel does NOT have path', from, '- blocking!');
+                                continue;
+                            }
+                            
+                            console.log('Panel HAS path', from, '- POWERING!');
+
+                            // Light up this panel!
+                            const cell = document.getElementById('cell_'+r+'_'+c);
+                            if(cell) {
+                                cell.style.borderColor = '#00ff00';
+                                cell.style.boxShadow = '0 0 25px rgba(0,255,0,1), inset 0 0 20px rgba(0,255,0,0.5)';
+                                cell.style.background = 'rgba(0,50,0,1)';
+                                console.log('Cell lit up:', cell.id);
+                            }
+
+                            // Light up ALL paths on this panel (not just the incoming one)
+                            ['top', 'bottom', 'left', 'right'].forEach(dir => {
+                                if(panel.paths.includes(dir)) {
+                                    const line = document.getElementById('line_'+r+'_'+c+'_'+dir);
+                                    if(line) {
+                                        line.setAttribute('style', 'stroke:#00ff00;stroke-width:8;stroke-linecap:round;filter:drop-shadow(0 0 12px #00ff00) drop-shadow(0 0 20px #00ff00);');
+                                        console.log('Line lit up:', line.id);
+                                    }
+                                }
+                            });
+                            
+                            // Check connections to adjacent cells
+                            if(panel.paths.includes('top') && from !== 'top') {
+                                console.log('Pushing UP to', r-1, c);
+                                queue.push({r: r-1, c: c, from: 'bottom'});
+                            }
+                            if(panel.paths.includes('bottom') && from !== 'bottom') {
+                                console.log('Pushing DOWN to', r+1, c);
+                                queue.push({r: r+1, c: c, from: 'top'});
+                            }
+                            if(panel.paths.includes('left') && from !== 'left') {
+                                console.log('Pushing LEFT to', r, c-1);
+                                queue.push({r: r, c: c-1, from: 'right'});
+                            }
+                            if(panel.paths.includes('right') && from !== 'right') {
+                                console.log('Pushing RIGHT to', r, c+1);
+                                queue.push({r: r, c: c+1, from: 'left'});
+                            }
+                        } else if(r === rows && c === outputCol) {
+                            console.log('=== POWER REACHED OUTPUT! ===');
+                            // Success!
+                            outputDiv.style.color = '#00ff00';
+                            outputDiv.style.textShadow = '0 0 15px #00ff00';
+                            outputDiv.innerHTML = '✅ OUTPUT';
+                            powerOutputArrow.style.color = '#00ff00';
+                            powerOutputArrow.style.textShadow = '0 0 15px #00ff00';
+                            setTimeout(() => { closePuzzle(); completePuzzle(puzzleIndex); }, 1000);
+                            return;
+                        }
+                    }
+                    console.log('=== POWER FLOW CHECK COMPLETE ===');
+                }
+            } else if(puzzle.type === 'click') {
+                // SIGNAL RELAY PUZZLE - Click nodes to redirect signal to beacon!
+                // CHECK: Must have completed Circuit Flow (reaction) puzzle first!
+                const circuitPuzzleIndex = gameState.beaconCells.findIndex(c => c.type === 'reaction');
+                const circuitPuzzleCompleted = circuitPuzzleIndex >= 0 && gameState.beaconCells[circuitPuzzleIndex].powered;
+                
+                if(!circuitPuzzleCompleted) {
+                    content.innerHTML = '<p style="color:#ff4444;">⚠️ NO SIGNAL! Circuit Flow must be routed FIRST!</p><p style="color:#888;">Complete the Circuit Flow puzzle to enable signal transmission!</p><div style="text-align:center;padding:40px;font-size:3em;">📡❌</div>';
+                    document.getElementById('puzzleModal').classList.add('active');
+                    return;
+                }
+                
+                content.innerHTML = '<p>Click nodes to redirect the signal. Guide it to the 📡 BEACON!</p><div style="color:#888;font-size:0.9em;margin-bottom:10px;">🟢=Signal | Trail shows path | Click to rotate nodes</div><div class="signal-relay" id="signalRelay"></div><div style="text-align:center;margin-top:10px;color:#00ff00;font-family:\'VT323\',monospace;font-size:1.5em;">TIME: <span id="relayTimer">60</span>s</div>';
+                
+                // Add pulse animation style
+                const style = document.createElement('style');
+                style.textContent = '@keyframes pulse { 0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 50% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); } }';
+                document.head.appendChild(style);
+                
+                const relayContainer = document.getElementById('signalRelay');
+                relayContainer.style.cssText = 'position:relative;width:100%;max-width:400px;height:400px;background:rgba(0,20,0,0.8);border:3px solid #00aa00;border-radius:10px;margin:0 auto;padding:20px;';
+                
+                // Grid: 5x5 nodes (25 tiles!)
+                const gridSize = 5;
+                const cellSize = 60;
+                const gap = 10;
+                
+                // Node types with fixed connections (will rotate)
+                // Directions: 0=top, 1=right, 2=bottom, 3=left
+                const nodeTypes = [
+                    { id: 0, name: 'straight', paths: [0, 2] }, // Vertical: top ↔ bottom
+                    { id: 1, name: 'corner', paths: [0, 1] } // Corner: top → right (┐)
+                ];
+                
+                // Initialize grid - ensure first cell has path going right, last has path from top
+                let grid = [];
+                for(let r = 0; r < gridSize; r++) {
+                    grid[r] = [];
+                    for(let c = 0; c < gridSize; c++) {
+                        let rotation = Math.floor(Math.random() * 4);
+                        let tileType = Math.floor(Math.random() * 2); // 0=straight, 1=corner
+                        
+                        // Make starting position (0,0) have path going right
+                        if(r === 0 && c === 0) {
+                            tileType = 0; // straight
+                            rotation = 1; // Horizontal (→)
+                        }
+                        // Make beacon position have path from top
+                        if(r === gridSize-1 && c === gridSize-1) {
+                            tileType = 0; // straight
+                            rotation = 0; // Vertical pointing up (↑)
+                        }
+                        
+                        grid[r][c] = {
+                            type: tileType,
+                            rotation: rotation
+                        };
+                    }
+                }
+                
+                // Signal start (top-left) and beacon (bottom-right)
+                const signalStart = {r: 0, c: 0};
+                const beaconPos = {r: gridSize-1, c: gridSize-1};
+                
+                // Game state
+                let signalPos = {...signalStart};
+                let signalTrail = [{r: signalStart.r, c: signalStart.c}]; // Track where signal has been
+                let timeLeft = 60; // More time!
+                let gameActive = true;
+                let signalInterval = null;
+                
+                // Render grid
+                const gridDiv = document.createElement('div');
+                gridDiv.style.cssText = 'display:grid;grid-template-columns:repeat('+gridSize+','+cellSize+'px);grid-template-rows:repeat('+gridSize+','+cellSize+'px);gap:'+gap+'px;justify-content:center;';
+                
+                function renderGrid() {
+                    gridDiv.innerHTML = '';
+                    for(let r = 0; r < gridSize; r++) {
+                        for(let c = 0; c < gridSize; c++) {
+                            const cell = document.createElement('div');
+                            cell.style.cssText = 'width:'+cellSize+'px;height:'+cellSize+'px;background:rgba(0,30,0,0.8);border:2px solid #006600;border-radius:5px;position:relative;cursor:pointer;transition:all 0.2s;';
+                            
+                            // Highlight signal trail (where signal has been)
+                            const inTrail = signalTrail.some(pos => pos.r === r && pos.c === c);
+                            if(inTrail && !(r === signalPos.r && c === signalPos.c)) {
+                                cell.style.background = 'rgba(0,100,0,0.5)';
+                                cell.style.borderColor = '#00aa00';
+                            }
+                            
+                            // Highlight current signal position
+                            if(r === signalPos.r && c === signalPos.c) {
+                                cell.style.background = 'rgba(0,255,0,0.6)';
+                                cell.style.borderColor = '#00ff00';
+                                cell.style.boxShadow = '0 0 25px rgba(0,255,0,1)';
+                            }
+                            
+                            // Highlight beacon
+                            if(r === beaconPos.r && c === beaconPos.c) {
+                                cell.style.background = 'rgba(0,100,100,0.6)';
+                                cell.style.borderColor = '#00ffff';
+                                cell.style.boxShadow = '0 0 15px rgba(0,255,255,0.6)';
+                            }
+                            
+                            // Draw node with rotation
+                            const cellData = grid[r][c];
+                            const nodeType = nodeTypes[cellData.type];
+                            const rotation = cellData.rotation * 90; // Convert to degrees
+
+                            // Get rotated paths
+                            const directions = ['top', 'right', 'bottom', 'left']; // 0,1,2,3
+                            const paths = nodeType.paths.map(p => directions[(p + cellData.rotation) % 4]);
+
+                            const svgNS = 'http://www.w3.org/2000/svg';
+                            const svg = document.createElementNS(svgNS, 'svg');
+                            svg.setAttribute('width', cellSize);
+                            svg.setAttribute('height', cellSize);
+                            // Don't rotate SVG container - paths are already calculated correctly
+
+                            const centerX = cellSize/2;
+                            const centerY = cellSize/2;
+                            // Dim lines for unpowered tiles, bright for powered
+                            const lineStyle = 'stroke:#00aa00;stroke-width:6;stroke-linecap:round;';
+                            const brightLineStyle = 'stroke:#00ff00;stroke-width:6;stroke-linecap:round;filter:drop-shadow(0 0 8px #00ff00);';
+                            
+                            // Determine if this tile is powered (in trail or current position)
+                            const isPowered = inTrail || (r === signalPos.r && c === signalPos.c);
+                            const currentLineStyle = isPowered ? brightLineStyle : lineStyle;
+                            
+                            if(paths.includes('top')) {
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.setAttribute('x1', centerX);
+                                line.setAttribute('y1', 0);
+                                line.setAttribute('x2', centerX);
+                                line.setAttribute('y2', centerY);
+                                line.setAttribute('style', currentLineStyle);
+                                svg.appendChild(line);
+                            }
+                            if(paths.includes('bottom')) {
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.setAttribute('x1', centerX);
+                                line.setAttribute('y1', centerY);
+                                line.setAttribute('x2', centerX);
+                                line.setAttribute('y2', cellSize);
+                                line.setAttribute('style', currentLineStyle);
+                                svg.appendChild(line);
+                            }
+                            if(paths.includes('left')) {
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.setAttribute('x1', 0);
+                                line.setAttribute('y1', centerY);
+                                line.setAttribute('x2', centerX);
+                                line.setAttribute('y2', centerY);
+                                line.setAttribute('style', currentLineStyle);
+                                svg.appendChild(line);
+                            }
+                            if(paths.includes('right')) {
+                                const line = document.createElementNS(svgNS, 'line');
+                                line.setAttribute('x1', centerX);
+                                line.setAttribute('y1', centerY);
+                                line.setAttribute('x2', cellSize);
+                                line.setAttribute('y2', centerY);
+                                line.setAttribute('style', currentLineStyle);
+                                svg.appendChild(line);
+                            }
+                            
+                            cell.appendChild(svg);
+                            
+                            // Add signal indicator
+                            if(r === signalPos.r && c === signalPos.c) {
+                                const signalDot = document.createElement('div');
+                                signalDot.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:15px;height:15px;background:#00ff00;border-radius:50%;box-shadow:0 0 15px #00ff00;animation:pulse 0.5s infinite;';
+                                cell.appendChild(signalDot);
+                            }
+                            
+                            // Click to rotate node
+                            cell.onclick = () => {
+                                if(!gameActive) return;
+                                grid[r][c].rotation = (grid[r][c].rotation + 1) % 4;
+                                renderGrid();
+                            };
+                            
+                            gridDiv.appendChild(cell);
+                        }
+                    }
+                    
+                    // Draw beacon indicator
+                    const beaconCell = gridDiv.children[grid.length * grid[0].length - 1];
+                    if(beaconCell) {
+                        const beaconIcon = document.createElement('div');
+                        beaconIcon.style.cssText = 'position:absolute;top:5px;right:5px;font-size:1.5em;';
+                        beaconIcon.textContent = '📡';
+                        beaconCell.appendChild(beaconIcon);
+                    }
+                }
+                
+                function moveSignal() {
+                    if(!gameActive) return;
+
+                    const cellData = grid[signalPos.r][signalPos.c];
+                    const nodeType = nodeTypes[cellData.type];
+
+                    // Get rotated paths
+                    const directions = ['top', 'right', 'bottom', 'left'];
+                    const paths = nodeType.paths.map(p => directions[(p + cellData.rotation) % 4]);
+
+                    // Get the previous position (where signal came from)
+                    const prevPos = signalTrail.length > 1 ? signalTrail[signalTrail.length - 2] : null;
+
+                    // Determine which direction we came FROM
+                    let cameFrom = null;
+                    if(prevPos) {
+                        if(prevPos.r < signalPos.r) cameFrom = 'top';
+                        else if(prevPos.r > signalPos.r) cameFrom = 'bottom';
+                        else if(prevPos.c < signalPos.c) cameFrom = 'left';
+                        else if(prevPos.c > signalPos.c) cameFrom = 'right';
+                    }
+
+                    // Check if signal can ENTER this tile from where it came
+                    if(cameFrom && !paths.includes(cameFrom)) {
+                        // Signal hits a wall - dead end!
+                        gameActive = false;
+                        clearInterval(signalInterval);
+                        clearInterval(timerInterval);
+                        showDialogue('Signal blocked! Rotate tiles to create a path!');
+                        setTimeout(() => { closePuzzle(); }, 1000);
+                        return;
+                    }
+
+                    // Find exit direction (not where we came from)
+                    let exitDirection = null;
+                    for(const path of paths) {
+                        if(path !== cameFrom) {
+                            exitDirection = path;
+                            break;
+                        }
+                    }
+
+                    if(!exitDirection) {
+                        // Dead end - signal stops
+                        gameActive = false;
+                        clearInterval(signalInterval);
+                        clearInterval(timerInterval);
+                        showDialogue('Signal blocked! Rotate tiles to create a path!');
+                        setTimeout(() => { closePuzzle(); }, 1000);
+                        return;
+                    }
+
+                    // Move in exit direction
+                    let newPos = {r: signalPos.r, c: signalPos.c};
+                    if(exitDirection === 'top') newPos.r--;
+                    else if(exitDirection === 'bottom') newPos.r++;
+                    else if(exitDirection === 'left') newPos.c--;
+                    else if(exitDirection === 'right') newPos.c++;
+
+                    signalPos = newPos;
+                    signalTrail.push({...signalPos});
+                    renderGrid();
+
+                    // Check if reached beacon
+                    if(signalPos.r === beaconPos.r && signalPos.c === beaconPos.c) {
+                        gameActive = false;
+                        clearInterval(signalInterval);
+                        clearInterval(timerInterval);
+                        setTimeout(() => { closePuzzle(); completePuzzle(index); }, 500);
+                        return;
+                    }
+
+                    // Check if signal went out of bounds
+                    if(signalPos.r < 0 || signalPos.r >= gridSize || signalPos.c < 0 || signalPos.c >= gridSize) {
+                        gameActive = false;
+                        clearInterval(signalInterval);
+                        clearInterval(timerInterval);
+                        showDialogue('Signal lost! Rotate tiles to keep it in bounds!');
+                        setTimeout(() => { closePuzzle(); }, 1000);
+                        return;
+                    }
+                }
+                
+                // Timer
+                const timerInterval = setInterval(() => {
+                    timeLeft--;
+                    const timerEl = document.getElementById('relayTimer');
+                    if(timerEl) timerEl.textContent = timeLeft;
+                    if(timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        clearInterval(signalInterval);
+                        gameActive = false;
+                        showDialogue('Time ran out! Signal lost.');
+                        setTimeout(() => { closePuzzle(); }, 1000);
+                    }
+                }, 1000);
+                
+                relayContainer.appendChild(gridDiv);
+                renderGrid();
+                
+                // Start signal movement (every 2 seconds - slower!)
+                signalInterval = setInterval(moveSignal, 2000);
+            } else if(puzzle.type === 'number') {
+                // SIGNAL MAZE PUZZLE - Navigate signal through maze to beacon!
+                // CHECK: Must have completed Signal Relay (click) puzzle first!
+                const relayPuzzleIndex = gameState.beaconCells.findIndex(c => c.type === 'click');
+                const relayPuzzleCompleted = relayPuzzleIndex >= 0 && gameState.beaconCells[relayPuzzleIndex].powered;
+                
+                if(!relayPuzzleCompleted) {
+                    content.innerHTML = '<p style="color:#ff4444;">⚠️ SIGNAL WEAK! Signal Relay must be completed FIRST!</p><p style="color:#888;">Complete the Signal Relay puzzle to strengthen the transmission!</p><div style="text-align:center;padding:40px;font-size:3em;">📡❌</div>';
+                    document.getElementById('puzzleModal').classList.add('active');
+                    return;
+                }
+                
+                content.innerHTML = '<p>Use <span style="color:#00ff00;">ARROW KEYS</span> to navigate the signal to the 📡 BEACON!</p><div class="signal-maze" id="signalMaze"></div><div style="text-align:center;margin-top:10px;color:#00ff00;font-family:\'VT323\',monospace;font-size:1.5em;">TIME: <span id="mazeTimer">45</span>s</div>';
+                
+                const mazeContainer = document.getElementById('signalMaze');
+                mazeContainer.style.cssText = 'position:relative;width:100%;max-width:350px;height:350px;background:rgba(0,20,0,0.8);border:3px solid #00aa00;border-radius:10px;margin:0 auto;padding:10px;';
+                
+                // Maze: 7x7 grid
+                const mazeSize = 7;
+                const cellSize = 45;
+                const gap = 5;
+                
+                // Generate random maze (recursive backtracking)
+                let maze = [];
+                for(let r = 0; r < mazeSize; r++) {
+                    maze[r] = [];
+                    for(let c = 0; c < mazeSize; c++) {
+                        maze[r][c] = 1; // 1 = wall, 0 = path
+                    }
+                }
+                
+                // Carve paths using recursive backtracking from (0,0)
+                function carvePath(r, c) {
+                    maze[r][c] = 0;
+                    const directions = [[0,2], [2,0], [0,-2], [-2,0]];
+                    const shuffled = directions.sort(() => Math.random() - 0.5);
+                    
+                    for(const [dr, dc] of shuffled) {
+                        const nr = r + dr, nc = c + dc;
+                        if(nr >= 0 && nr < mazeSize && nc >= 0 && nc < mazeSize && maze[nr][nc] === 1) {
+                            maze[r + dr/2][c + dc/2] = 0; // Carve wall between
+                            carvePath(nr, nc);
+                        }
+                    }
+                }
+                
+                carvePath(0, 0);
+                
+                // Ensure beacon position is accessible
+                maze[mazeSize-1][mazeSize-1] = 0;
+                
+                // Player position
+                let playerPos = {r: 0, c: 0};
+                const beaconPos = {r: mazeSize-1, c: mazeSize-1};
+                let timeLeft = 45;
+                let gameActive = true;
+                
+                // Render maze
+                const mazeGrid = document.createElement('div');
+                mazeGrid.style.cssText = 'display:grid;grid-template-columns:repeat('+mazeSize+','+cellSize+'px);grid-template-rows:repeat('+mazeSize+','+cellSize+'px);gap:'+gap+'px;justify-content:center;';
+                
+                function renderMaze() {
+                    mazeGrid.innerHTML = '';
+                    for(let r = 0; r < mazeSize; r++) {
+                        for(let c = 0; c < mazeSize; c++) {
+                            const cell = document.createElement('div');
+                            cell.style.cssText = 'width:'+cellSize+'px;height:'+cellSize+'px;background:' + (maze[r][c] === 1 ? 'rgba(100,0,0,0.3)' : 'rgba(0,30,0,0.8)') + ';border:1px solid ' + (maze[r][c] === 1 ? '#440000' : '#006600') + ';border-radius:3px;position:relative;';
+                            
+                            // Draw beacon
+                            if(r === beaconPos.r && c === beaconPos.c) {
+                                cell.style.background = 'rgba(0,100,100,0.6)';
+                                cell.style.borderColor = '#00ffff';
+                                cell.style.boxShadow = '0 0 15px rgba(0,255,255,0.6)';
+                                const beaconIcon = document.createElement('div');
+                                beaconIcon.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:1.5em;';
+                                beaconIcon.textContent = '📡';
+                                cell.appendChild(beaconIcon);
+                            }
+                            
+                            // Draw player
+                            if(r === playerPos.r && c === playerPos.c) {
+                                cell.style.background = 'rgba(0,255,0,0.6)';
+                                cell.style.borderColor = '#00ff00';
+                                cell.style.boxShadow = '0 0 20px rgba(0,255,0,1)';
+                                const playerDot = document.createElement('div');
+                                playerDot.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px;background:#00ff00;border-radius:50%;box-shadow:0 0 15px #00ff00;animation:spin 0.5s linear infinite;';
+                                cell.appendChild(playerDot);
+                            }
+                            
+                            mazeGrid.appendChild(cell);
+                        }
+                    }
+                }
+                
+                // Keyboard controls
+                function movePlayer(dr, dc) {
+                    if(!gameActive) return;
+                    const newR = playerPos.r + dr;
+                    const newC = playerPos.c + dc;
+                    
+                    if(newR >= 0 && newR < mazeSize && newC >= 0 && newC < mazeSize && maze[newR][newC] === 0) {
+                        playerPos = {r: newR, c: newC};
+                        renderMaze();
+                        
+                        // Check if reached beacon
+                        if(playerPos.r === beaconPos.r && playerPos.c === beaconPos.c) {
+                            gameActive = false;
+                            clearInterval(timerInterval);
+                            setTimeout(() => { closePuzzle(); completePuzzle(index); }, 500);
+                        }
+                    }
+                }
+                
+                document.addEventListener('keydown', function handleKey(e) {
+                    if(!gameActive) return;
+                    if(e.key === 'ArrowUp') { e.preventDefault(); movePlayer(-1, 0); }
+                    else if(e.key === 'ArrowDown') { e.preventDefault(); movePlayer(1, 0); }
+                    else if(e.key === 'ArrowLeft') { e.preventDefault(); movePlayer(0, -1); }
+                    else if(e.key === 'ArrowRight') { e.preventDefault(); movePlayer(0, 1); }
+                });
+                
+                // Timer
+                const timerInterval = setInterval(() => {
+                    timeLeft--;
+                    const timerEl = document.getElementById('mazeTimer');
+                    if(timerEl) timerEl.textContent = timeLeft;
+                    if(timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        gameActive = false;
+                        showDialogue('Time ran out! Signal lost in the maze.');
+                        setTimeout(() => { closePuzzle(); }, 1000);
+                    }
+                }, 1000);
+                
+                mazeContainer.appendChild(mazeGrid);
+                renderMaze();
+                
+                // Store reference to cleanup
+                window.mazeKeyHandler = function handleKey(e) {
+                    if(!gameActive) return;
+                    if(e.key === 'ArrowUp') { e.preventDefault(); movePlayer(-1, 0); }
+                    else if(e.key === 'ArrowDown') { e.preventDefault(); movePlayer(1, 0); }
+                    else if(e.key === 'ArrowLeft') { e.preventDefault(); movePlayer(0, -1); }
+                    else if(e.key === 'ArrowRight') { e.preventDefault(); movePlayer(0, 1); }
+                };
+                document.addEventListener('keydown', window.mazeKeyHandler);
+                
+                // Cleanup function when puzzle closes
+                window.cleanupMaze = () => {
+                    document.removeEventListener('keydown', window.mazeKeyHandler);
+                    clearInterval(timerInterval);
+                    gameActive = false;
+                };
+            }
+            document.getElementById('puzzleModal').classList.add('active');
+        }
+
+        function completePuzzle(index) {
+            gameState.beaconCells[index].powered = true;
+            gameState.beaconProgress++;
+            updateBeaconGrid();
+            if(gameState.beaconProgress >= 4) { setTimeout(startPhase2, 1500); }
+        }
+        
+        function closePuzzle() {
+            // Cleanup maze event listeners if they exist
+            if(window.cleanupMaze) window.cleanupMaze();
+            document.getElementById('puzzleModal').classList.remove('active');
+        }
+        
+        // PHASE 2 - FREQUENCY TUNING
+        function startPhase2() {
+            gameState.phase = 2; gameState.attempts = 8;
+            document.getElementById('attemptsMeter').style.display = 'block';
+            document.getElementById('attemptsLeft').textContent = gameState.attempts;
+            document.getElementById('beaconPanel').classList.remove('active');
+            document.getElementById('frequencyPanel').classList.add('active');
+            ['A','B','C'].forEach(letter => {
+                document.getElementById('freq'+letter).addEventListener('input', () => {
+                    const v = document.getElementById('value'+letter);
+                    v.textContent = document.getElementById('freq'+letter).value;
+                    v.classList.remove('matched','close','warm','cold');
+                });
+            });
+            showDialogue("E13: <span class='e13'>Beacon powered! Now tune the frequencies!</span>");
+        }
+        
+        function submitFrequencies() {
+            const freqA = parseInt(document.getElementById('freqA').value);
+            const freqB = parseInt(document.getElementById('freqB').value);
+            const freqC = parseInt(document.getElementById('freqC').value);
+            const valueA = document.getElementById('valueA'), valueB = document.getElementById('valueB'), valueC = document.getElementById('valueC');
+            let correct = 0, hints = [];
+            
+            const checkFreq = (freq, correctFreq, el) => {
+                const diff = Math.abs(freq - correctFreq);
+                el.classList.remove('matched','close','warm','cold');
+                if(diff === 0) { el.classList.add('matched'); correct++; hints.push('✓'); }
+                else if(diff === 1) { el.classList.add('close'); hints.push('🟡'); }
+                else if(diff <= 3) { el.classList.add('warm'); hints.push('🟠'); }
+                else { el.classList.add('cold'); hints.push('🔴'); }
+            };
+            
+            checkFreq(freqA, gameState.correctFrequencies.a, valueA);
+            checkFreq(freqB, gameState.correctFrequencies.b, valueB);
+            checkFreq(freqC, gameState.correctFrequencies.c, valueC);
+            
+            if(correct === 3) { setTimeout(startPhase3, 1500); }
+            else {
+                gameState.attempts--;
+                document.getElementById('attemptsLeft').textContent = gameState.attempts;
+                if(gameState.attempts <= 0) { die(); }
+                else { showDialogue(`Hints: ${hints.join(' ')} | Attempts: ${gameState.attempts}`); }
+            }
+        }
+        
+        // PHASE 3 - PATTERN MEMORY
+        function startPhase3() {
+            gameState.phase = 3;
+            document.getElementById('attemptsMeter').style.display = 'none';
+            document.getElementById('frequencyPanel').classList.remove('active');
+            document.getElementById('patternPanel').classList.add('active');
+            
+            const grid = document.getElementById('patternGrid'); grid.innerHTML = '';
+            for(let i = 0; i < 9; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'pattern-btn';
+                btn.onclick = () => handlePatternClick(i, btn);
+                grid.appendChild(btn);
+            }
+            gameState.patternSequence = []; gameState.playerPattern = []; gameState.patternRound = 1;
+            startPatternRound();
+            showDialogue("E13: <span class='e13'>Frequencies tuned! Now decrypt the pattern!</span>");
+        }
+        
+        function startPatternRound() {
+            gameState.playerPattern = [];
+            document.getElementById('patternRound').textContent = gameState.patternRound;
+            gameState.patternSequence.push(Math.floor(Math.random()*9));
+            playSequence();
+        }
+        
+        function playSequence() {
+            const buttons = document.querySelectorAll('.pattern-btn');
+            let step = 0;
+            
+            // Clear any existing lit buttons first
+            buttons.forEach(b => b.classList.remove('lit'));
+            
+            const interval = setInterval(() => {
+                if(step >= gameState.patternSequence.length) {
+                    clearInterval(interval);
+                    return;
+                }
+                const btn = buttons[gameState.patternSequence[step]];
+                btn.classList.add('lit');
+                
+                // Remove lit class after 500ms (before next step)
+                setTimeout(() => {
+                    btn.classList.remove('lit');
+                }, 500);
+                
+                step++;
+            }, 1000); // 1 second per step (500ms on, 500ms off)
+        }
+        
+        function handlePatternClick(index, btn) {
+            if(index === gameState.patternSequence[gameState.playerPattern.length]) {
+                btn.classList.add('correct');
+                gameState.playerPattern.push(index);
+                if(gameState.playerPattern.length >= gameState.patternSequence.length) {
+                    setTimeout(() => {
+                        document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('correct'));
+                        gameState.patternRound++;
+                        if(gameState.patternRound > 5) { setTimeout(startPhase4, 1500); }
+                        else { startPatternRound(); }
+                    }, 1000);
+                }
+            } else {
+                btn.classList.add('wrong');
+                gameState.integrity -= 20;
+                document.getElementById('integrityBar').style.width = gameState.integrity + '%';
+                if(gameState.integrity <= 0) { die(); }
+                else {
+                    setTimeout(() => {
+                        document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('wrong'));
+                        gameState.playerPattern = [];
+                        playSequence();
+                    }, 1000);
+                }
+            }
+        }
+        
+        // PHASE 4
+        function startPhase4() {
+            gameState.phase = 4;
+            document.getElementById('beaconPanel').classList.remove('active');
+            document.getElementById('quizPanel').classList.add('active');
+            gameState.currentQuiz = 0; gameState.quizScore = 0;
+            showQuiz();
+            showDialogue("E13: <span class='e13'>L14's consciousness speaks! Answer their questions!</span>");
+        }
+        
+        function showQuiz() {
+            if(gameState.currentQuiz >= quizQuestions.length) { setTimeout(startPhase5, 1500); return; }
+            const q = quizQuestions[gameState.currentQuiz];
+            document.getElementById('quizText').innerHTML = `<span class="e13">Q${gameState.currentQuiz+1}:</span><br><br>${q.question}`;
+            document.getElementById('quizButtons').innerHTML = q.answers.map((a,i) =>
+                `<button class="choice-btn" onclick="answerQuiz(${i})">${a.text}</button>`
+            ).join('');
+        }
+        
+        function answerQuiz(i) {
+            const q = quizQuestions[gameState.currentQuiz];
+            if(q.answers[i].correct) { gameState.quizScore++; showDialogue('Correct!'); }
+            else { showDialogue('Wrong...'); }
+            gameState.currentQuiz++;
+            setTimeout(showQuiz, 1500);
+        }
+        
+        // PHASE 5
+        function startPhase5() {
+            gameState.phase = 5;
+            document.getElementById('quizPanel').classList.remove('active');
+            document.getElementById('choicePanel').classList.add('active');
+            document.getElementById('choiceText').innerHTML = `
+                <span class="l14">"E13... can you hear me?..."</span><br><br>
+                L14's voice comes through. They ask you to make a choice:<br><br>
+                <span class="highlight">Broadcast their truth? Or let them rest in silence?</span>
+            `;
+            document.getElementById('choiceButtons').innerHTML = `
+                <button class="choice-btn" onclick="winGame('broadcast')">📡 BROADCAST TRUTH</button>
+                <button class="choice-btn" onclick="winGame('silence')">🤫 LET THEM REST</button>
+            `;
+        }
+        
+        function winGame(ending) {
+            document.getElementById('screenFlash').classList.add('green');
+            setTimeout(() => document.getElementById('screenFlash').classList.remove('green'), 200);
+            document.getElementById('resultTitle').textContent = ending === 'broadcast' ? 'SIGNAL TRANSMITTED' : 'SILENT HONOR';
+            document.getElementById('resultTitle').className = 'result-title success';
+            document.getElementById('resultMessage').innerHTML = ending === 'broadcast' 
+                ? `You broadcast L14's truth.<br>Their sacrifice lives on.<br><br><span style="color:#00ff00;">🟢 E13 SIGNAL BEACON</span>`
+                : `You honored L14's wish.<br>Some truths rest in peace.<br><br><span style="color:#00ff00;">🟢 E13 SIGNAL BEACON</span>`;
+            document.getElementById('resultScreen').classList.add('active');
+            fetch('/add_item', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({item:'🟢 E13 Signal Beacon'}) });
+        }
+        
+        function die() {
+            document.getElementById('screenFlash').classList.add('red');
+            setTimeout(() => document.getElementById('screenFlash').classList.remove('red'), 200);
+            document.getElementById('resultTitle').textContent = 'SIGNAL LOST';
+            document.getElementById('resultTitle').className = 'result-title fail';
+            document.getElementById('resultMessage').textContent = 'The signal faded. L14\'s legacy is lost...';
+            document.getElementById('resultScreen').classList.add('active');
+        }
+        
+        function continueMission() { window.location.href = '/sector-5'; }
+        function leaveTrial() { window.location.href = '/sector-5'; }
+        
+        function showDialogue(text) {
+            document.getElementById('dialogueText').innerHTML = text;
+            document.getElementById('dialogueBox').classList.add('active');
+            setTimeout(() => document.getElementById('dialogueBox').classList.remove('active'), 4000);
+        }
+    </script>
+</body>
+</html>

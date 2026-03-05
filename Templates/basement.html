@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- de la -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Basement</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0d0d0d 50%, #050505 100%);
+            min-height: 100vh;
+            display: block;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 0, 0, 0.1),
+                    rgba(0, 0, 0, 0.1) 1px,
+                    transparent 1px,
+                    transparent 3px
+                ),
+                radial-gradient(circle at 30% 40%, rgba(50, 80, 50, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 70% 80%, rgba(50, 80, 50, 0.1) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .basement-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 40px 150px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .basement-title {
+            color: #4a6741;
+            font-size: 2.5em;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px rgba(74, 105, 65, 0.5);
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        .bunker-wall {
+            background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 3px solid #3a3a3a;
+            border-radius: 5px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 
+                inset 0 0 50px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .bunker-wall::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            bottom: 10px;
+            border: 1px solid rgba(100, 100, 100, 0.3);
+            border-radius: 3px;
+            pointer-events: none;
+        }
+
+        .basement-description {
+            color: #666;
+            font-size: 1em;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        .warning-box {
+            background: rgba(74, 105, 65, 0.1);
+            border: 2px solid #4a6741;
+            border-radius: 5px;
+            padding: 25px;
+            margin: 30px 0;
+            color: #6a8f5f;
+            font-size: 0.95em;
+            box-shadow: 0 0 20px rgba(74, 105, 65, 0.2);
+        }
+
+        .warning-text {
+            color: #5a7f4f;
+            font-weight: bold;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+        }
+
+        .desk-container {
+            margin-top: 60px;
+            padding: 40px;
+            background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 2px solid #2a2a2a;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .desk {
+            width: 100%;
+            max-width: 550px;
+            height: 130px;
+            background: linear-gradient(180deg, #3a3a2a 0%, #2a2a1a 100%);
+            margin: 0 auto;
+            border-radius: 5px;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+        }
+
+        .desk::before {
+            content: '';
+            position: absolute;
+            bottom: -45px;
+            left: 25px;
+            width: 18px;
+            height: 45px;
+            background: #2a2a1a;
+        }
+
+        .desk::after {
+            content: '';
+            position: absolute;
+            bottom: -45px;
+            right: 25px;
+            width: 18px;
+            height: 45px;
+            background: #2a2a1a;
+        }
+
+        .computer-monitor {
+            width: 240px;
+            height: 170px;
+            background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
+            margin: -110px auto 0;
+            border-radius: 10px;
+            position: relative;
+            border: 4px solid #1a1a1a;
+            box-shadow: 0 0 35px rgba(74, 105, 65, 0.4);
+        }
+
+        .computer-screen {
+            width: 215px;
+            height: 145px;
+            background: #0a1a0a;
+            margin: 9px;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-input-container {
+            margin-top: 5px;
+        }
+
+        .code-input {
+            width: 100%;
+            background: #051005;
+            border: 1px solid #4a6741;
+            color: #4a6741;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            padding: 4px;
+            border-radius: 2px;
+            outline: none;
+            text-transform: uppercase;
+        }
+
+        .code-input:focus {
+            border-color: #6a8f5f;
+            box-shadow: 0 0 10px rgba(74, 105, 65, 0.5);
+        }
+
+        .code-submit {
+            width: 100%;
+            background: #1a2a1a;
+            border: 1px solid #4a6741;
+            color: #4a6741;
+            font-family: 'Courier New', monospace;
+            font-size: 8px;
+            padding: 3px;
+            margin-top: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .code-submit:hover {
+            background: #2a3a2a;
+        }
+
+        .code-message {
+            color: #4a6741;
+            font-size: 8px;
+            font-family: 'Courier New', monospace;
+            margin-top: 4px;
+            min-height: 10px;
+        }
+
+        .computer-stand {
+            width: 80px;
+            height: 35px;
+            background: #3a3a3a;
+            margin: 0 auto;
+        }
+
+        .keyboard {
+            width: 190px;
+            height: 45px;
+            background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+            margin: 12px auto 0;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .keyboard::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            background: repeating-linear-gradient(
+                90deg,
+                #1a1a1a 0px,
+                #1a1a1a 4px,
+                #2a2a2a 4px,
+                #2a2a2a 9px
+            );
+        }
+
+        .pipes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .pipe {
+            position: absolute;
+            background: linear-gradient(90deg, #2a2a2a, #3a3a3a, #2a2a2a);
+            border: 1px solid #1a1a1a;
+        }
+
+        .pipe-horizontal {
+            height: 8px;
+            width: 100%;
+        }
+
+        .pipe-vertical {
+            width: 8px;
+            height: 200px;
+        }
+
+        .vent {
+            position: absolute;
+            width: 80px;
+            height: 60px;
+            background: #1a1a1a;
+            border: 3px solid #3a3a3a;
+            top: 100px;
+            right: 50px;
+        }
+
+        .vent::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            background: repeating-linear-gradient(
+                90deg,
+                #2a2a2a 0px,
+                #2a2a2a 4px,
+                #1a1a1a 4px,
+                #1a1a1a 8px
+            );
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: #4a6741;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px 20px;
+            border: 1px solid #4a6741;
+            border-radius: 5px;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+
+        .back-link:hover {
+            background: rgba(74, 105, 65, 0.2);
+            box-shadow: 0 0 20px rgba(74, 105, 65, 0.4);
+        }
+
+        .dust-particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .dust {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(74, 105, 65, 0.3);
+            border-radius: 50%;
+            animation: dust-float 15s infinite;
+        }
+
+        @keyframes dust-float {
+            0%, 100% { 
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { 
+                transform: translateY(-100vh) translateX(30px);
+                opacity: 0;
+            }
+        }
+
+        .classified-stamp {
+            color: #8b0000;
+            border: 3px solid #8b0000;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            display: inline-block;
+            margin: 20px 0;
+            transform: rotate(-5deg);
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <a href="/piano-room" class="back-link">← Leave Basement</a>
+    
+    <div class="dust-particles" id="dustParticles"></div>
+
+    <div class="basement-container">
+        <h1 class="basement-title">🛡️ The Bunker 🛡️</h1>
+        
+        <p class="basement-description">
+            You've discovered the hidden underground bunker beneath the piano room...<br>
+            The air is cold and stale. Concrete walls surround you.
+        </p>
+
+        <!-- Desk with Computer -->
+        <div class="desk-container">
+            <div class="computer-monitor">
+                <div class="computer-screen">
+                    <div class="code-input-container">
+                        <input type="text" class="code-input" id="codeInput" placeholder="Enter code..." maxlength="20" autocomplete="off">
+                        <button class="code-submit" onclick="checkCode()">VERIFY</button>
+                        <div class="code-message" id="codeMessage"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="computer-stand"></div>
+            <div class="desk"></div>
+            <div class="keyboard"></div>
+        </div>
+
+        <!-- Decorative pipes -->
+        <div class="pipes">
+            <div class="pipe pipe-horizontal" style="top: 50px;"></div>
+            <div class="pipe pipe-vertical" style="left: 100px; top: 50px;"></div>
+            <div class="pipe pipe-vertical" style="right: 100px; top: 50px;"></div>
+        </div>
+
+        <!-- Vent -->
+        <div class="vent"></div>
+    </div>
+
+    <script>
+        // Create dust particles
+        function createDustParticles() {
+            const container = document.getElementById('dustParticles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const dust = document.createElement('div');
+                dust.className = 'dust';
+                dust.style.left = Math.random() * 100 + '%';
+                dust.style.top = Math.random() * 100 + '%';
+                dust.style.animationDelay = Math.random() * 10 + 's';
+                dust.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(dust);
+            }
+        }
+
+        createDustParticles();
+
+        // Code input functionality
+        const validCodes = [
+            '7X-9942-DELTA',
+            '3L-7721-OMEGA',
+            '9F-3381-THETA',
+            '2D-5566-ALPHA',
+            '5E-1102-GAMMA',
+            '1C-0013-UNKNOWN',
+            '8A-0029-TEACHER'
+        ];
+
+        const codeRoutes = {
+            '7X-9942-DELTA': '/sector-7',
+            '3L-7721-OMEGA': '/sector-3',
+            '9F-3381-THETA': '/sector-9',
+            '2D-5566-ALPHA': '/sector-2',
+            '5E-1102-GAMMA': '/sector-5',
+            '1C-0013-UNKNOWN': '/sector-1',
+            '8A-0029-TEACHER': '/sector-8'
+        };
+
+        function checkCode() {
+            const input = document.getElementById('codeInput');
+            const codeMessage = document.getElementById('codeMessage');
+            const code = input.value.trim().toUpperCase();
+
+            if (validCodes.includes(code)) {
+                codeMessage.textContent = 'ACCESS GRANTED';
+                codeMessage.style.color = '#6a8f5f';
+                setTimeout(() => {
+                    window.location.href = codeRoutes[code] || '/basement';
+                }, 1000);
+            } else if (code !== '') {
+                codeMessage.textContent = 'ACCESS DENIED';
+                codeMessage.style.color = '#8b0000';
+                input.value = '';
+            } else {
+                codeMessage.textContent = 'ENTER CODE';
+                codeMessage.style.color = '#4a6741';
+            }
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('codeInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkCode();
+            }
+        });
+    </script>
+</body>
+</html>

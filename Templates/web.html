@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Las -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Primera Pagina Web</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1e90ff 0%, #00b4db 100%);
+        }
+        .header-container {
+            background-color: rgba(0,0,0,0.4);
+            padding: 40px 20px;
+            width: 100%;
+            box-sizing: border-box;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            color: white;
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-size: 42px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            margin: 0;
+            text-align: center;
+            font-size: 18px;
+        }
+        .content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            flex-grow: 1;
+        }
+        .welcome-box {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+        .welcome-text {
+            font-size: 24px;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .buttons-container {
+            margin: 10px 0;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 18px 40px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 20px;
+            margin: 15px;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        #button1 {
+            background: linear-gradient(135deg, #1e90ff 0%, #00b4db 100%);
+        }
+        #button1:hover {
+            background: linear-gradient(135deg, #00b4db 0%, #1e90ff 100%);
+        }
+        #button2 {
+            background: linear-gradient(135deg, #1ec7ff 0%, #00a8cc 100%);
+        }
+        #button2:hover {
+            background: linear-gradient(135deg, #00a8cc 0%, #1ec7ff 100%);
+        }
+        #button3 {
+            background: linear-gradient(135deg, #ffce1e 0%, #ffb700 100%);
+            color: black;
+        }
+        #button3:hover {
+            background: linear-gradient(135deg, #ffb700 0%, #ffce1e 100%);
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-container">
+        <h1>👋 ¡Bienvenido a mi sitio web!</h1>
+        <p class="subtitle">Hecho con Python, CSS y JavaScript</p>
+    </div>
+
+    <div class="content">
+        <button class="invisible-btn" style="position: absolute; top: 10px; left: 10px; width: 50px; height: 50px; opacity: 0; cursor: pointer;" onclick="authenticationButtonClicked()"></button>
+        <button class="invisible-btn" style="position: absolute; bottom: 80px; right: 10px; width: 50px; height: 50px; opacity: 0; cursor: pointer;" onclick="memoryLaneButtonClicked()"></button>
+
+        <div class="welcome-box">
+            <p class="welcome-text">¡Hola! Soy un niño de 13 años que empezó Algorithmics el año pasado. ¡Me gustan las matemáticas, la historia y existir! 🎉</p>
+        </div>
+
+        <div class="buttons-container">
+            <button id="button1" class="btn" onclick="button1Clicked()">✨ Haz Click Aquí</button>
+            <button id="button2" class="btn" onclick="button2Clicked()">🎁 Info</button>
+            <button id="button3" class="btn" onclick="button3Clicked()">🥔 Chip</button>
+        </div>
+    </div>
+
+    <footer style="background-color: rgba(0,0,0,0.6); color: #a0a0a0; text-align: center; padding: 20px; width: 100%; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
+        <p>&copy; 2026 My Website. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Function for Button 1 - Rickroll
+        function button1Clicked() {
+            window.location.href = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+        }
+
+        // Function for Button 2 - Info
+        function button2Clicked() {
+            alert("👋 Soy Christian (El programador) 💻\n🎂 Edad: 13\n🗣️ Lenguajes: Español, English, Deutsch, print(\"Python\") 🐍");
+        }
+
+        // Function for Button 3 - 10 hour chip spinning video
+        function button3Clicked() {
+            window.location.href = 'https://www.youtube.com/watch?v=coaN2VBNgYA&list=RDcoaN2VBNgYA&start_radio=1&t=4s'; // 10 hour spinning chip video
+        }
+
+        // Function for invisible buttons
+        function invisibleButtonClicked() {
+            alert("You found a secret invisible button! 🎉");
+        }
+
+        // Function for authentication button
+        function authenticationButtonClicked() {
+            window.location.href = '/authentication';
+        }
+
+        // Function for memory lane button
+        function memoryLaneButtonClicked() {
+            window.location.href = '/newpage';
+        }
+
+    </script>
+</body>
+</html>

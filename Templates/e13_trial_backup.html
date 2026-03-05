@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E13'S TRIAL - THE SIGNAL</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            color: #00ff00;
+            min-height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.2),
+                rgba(0, 0, 0, 0.2) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Signal strength */
+        .signal-meter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #00ff00;
+            z-index: 100;
+        }
+
+        .timer-meter {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #ff4444;
+            z-index: 100;
+        }
+
+        .timer-meter.urgent {
+            animation: timerUrgent 0.5s infinite;
+        }
+
+        @keyframes timerUrgent {
+            0%, 100% { color: #ff4444; }
+            50% { color: #ff0000; text-shadow: 0 0 20px #ff0000; }
+        }
+
+        .attempts-meter {
+            position: fixed;
+            top: 50px;
+            left: 20px;
+            font-family: 'VT323', monospace;
+            font-size: 1.3em;
+            color: #ffaa00;
+            z-index: 100;
+        }
+
+        /* Integrity bar */
+        .bars-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            z-index: 100;
+        }
+
+        .bar-label {
+            font-family: 'VT323', monospace;
+            font-size: 1em;
+            color: #888;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 25px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s;
+        }
+
+        .integrity-fill {
+            background: linear-gradient(90deg, #00aa00, #00ff00);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        /* Start screen */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .start-title {
+            font-family: 'VT323', monospace;
+            font-size: 4em;
+            color: #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 15px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+        }
+
+        .start-message {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2em;
+            color: #888;
+            max-width: 600px;
+            line-height: 2;
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            font-family: 'VT323', monospace;
+            font-size: 2em;
+            color: #fff;
+            background: linear-gradient(145deg, #00aa00, #008800);
+            border: 3px solid #00ff00;
+            padding: 20px 60px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(145deg, #00cc00, #00aa00);
+            box-shadow: 0 0 50px rgba(0, 255, 0, 0.8);
+            transform: scale(1.05);
+        }
+
+        /* Result screen */
+        .result-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 400;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .result-screen.active {
+            display: flex;
+        }
+
+        .result-title {
+            font-family: 'VT323', monospace;
+            font-size: 5em;
+            text-transform: uppercase;
+            letter-spacing: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-title.success {
+            color: #00ff00;
+            text-shadow: 0 0 50px rgba(0, 255, 0, 0.8);
+        }
+
+        .result-title.fail {
+            color: #ff0000;
+            text-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+        }
+
+        .result-message {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.3em;
+            color: #ccc;
+            max-width: 600px;
+            line-height: 2;
+            margin-bottom: 40px;
+        }
+
+        .leave-btn {
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #888;
+            background: transparent;
+            border: 3px solid #444;
+            padding: 15px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+        }
+
+        .leave-btn:hover {
+            color: #fff;
+            border-color: #666;
+            background: rgba(50, 50, 50, 0.3);
+        }
+
+        /* ===== PHASE 1: FREQUENCY TUNING ===== */
+        .frequency-panel {
+            display: none;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 30px;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00aa00;
+            border-radius: 10px;
+        }
+
+        .frequency-panel.active {
+            display: block;
+        }
+
+        .frequency-title {
+            font-family: 'VT323', monospace;
+            font-size: 2em;
+            color: #00ff00;
+            text-align: center;
+            margin-bottom: 30px;
+            letter-spacing: 5px;
+        }
+
+        .frequency-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+
+        .frequency-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1em;
+            color: #00ff00;
+            width: 150px;
+        }
+
+        .frequency-slider {
+            flex: 1;
+            margin: 0 20px;
+        }
+
+        .frequency-slider input[type="range"] {
+            width: 100%;
+            height: 10px;
+            background: #1a1a1a;
+            border: 2px solid #00aa00;
+            border-radius: 5px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .frequency-slider input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 25px;
+            height: 25px;
+            background: #00ff00;
+            border: 2px solid #00aa00;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        .frequency-value {
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #00ff00;
+            width: 80px;
+            text-align: right;
+        }
+
+        .frequency-value.matched {
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        .frequency-value.close {
+            color: #ffff00;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
+        }
+
+        .frequency-value.warm {
+            color: #ffaa00;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.8);
+        }
+
+        .frequency-value.cold {
+            color: #ff4444;
+            text-shadow: 0 0 10px rgba(255, 68, 68, 0.8);
+        }
+
+        .submit-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-top: 30px;
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #fff;
+            background: linear-gradient(145deg, #00aa00, #008800);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: linear-gradient(145deg, #00cc00, #00aa00);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== PHASE 2: SIGNAL DECRYPTION (PATTERN) ===== */
+        .pattern-panel {
+            display: none;
+            max-width: 600px;
+            margin: 80px auto;
+            padding: 30px;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00aa00;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .pattern-panel.active {
+            display: block;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 30px auto;
+            max-width: 400px;
+        }
+
+        .pattern-btn {
+            aspect-ratio: 1;
+            background: rgba(0, 50, 0, 0.5);
+            border: 2px solid #00aa00;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 2em;
+        }
+
+        .pattern-btn:hover {
+            border-color: #00ff00;
+            background: rgba(0, 80, 0, 0.5);
+        }
+
+        .pattern-btn.lit {
+            background: rgba(0, 255, 0, 0.6);
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+        }
+
+        .pattern-btn.correct {
+            background: rgba(0, 255, 255, 0.6);
+            border-color: #00ffff;
+        }
+
+        .pattern-btn.wrong {
+            background: rgba(255, 0, 0, 0.6);
+            border-color: #ff0000;
+        }
+
+        .pattern-info {
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #00ff00;
+            margin: 20px 0;
+        }
+
+        .pattern-sequence {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2em;
+            color: #00ffff;
+            margin: 20px 0;
+            min-height: 50px;
+            letter-spacing: 10px;
+        }
+        .tower-panel {
+            display: none;
+            position: relative;
+            max-width: 800px;
+            margin: 80px auto;
+            padding: 20px;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00aa00;
+            border-radius: 10px;
+        }
+
+        .tower-panel.active {
+            display: block;
+        }
+
+        .tower-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 5px;
+            margin: 20px 0;
+            height: 300px;
+        }
+
+        .tower-cell {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #004400;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .tower-cell:hover {
+            border-color: #00ff00;
+            background: rgba(0, 50, 0, 0.5);
+        }
+
+        .tower-cell.has-booster {
+            background: rgba(0, 255, 0, 0.3);
+            border-color: #00ff00;
+        }
+
+        .tower-cell.has-booster::after {
+            content: '📡';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+        }
+
+        .tower-cell.corrupted {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff0000;
+        }
+
+        .tower-cell.corrupted::after {
+            content: '🦠';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+        }
+
+        .tower-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+
+        .tower-timer {
+            font-family: 'VT323', monospace;
+            font-size: 2em;
+            color: #00ff00;
+        }
+
+        .tower-boosters {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1em;
+            color: #00ffff;
+        }
+
+        .place-booster-btn {
+            padding: 10px 20px;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            color: #fff;
+            background: linear-gradient(145deg, #00aaaa, #008888);
+            border: 2px solid #00ffff;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .place-booster-btn:hover:not(:disabled) {
+            background: linear-gradient(145deg, #00cccc, #00aaaa);
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+
+        .place-booster-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ===== PHASE 3: THE CHOICE ===== */
+        .choice-panel {
+            display: none;
+            max-width: 700px;
+            margin: 100px auto;
+            padding: 40px;
+            background: rgba(0, 20, 0, 0.9);
+            border: 2px solid #00aa00;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .choice-panel.active {
+            display: block;
+        }
+
+        .choice-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2em;
+            color: #ccc;
+            line-height: 2;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        .choice-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .choice-btn {
+            padding: 20px 40px;
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            border: 2px solid;
+            border-radius: 8px;
+            cursor: pointer;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+
+        .choice-btn.transmit {
+            background: linear-gradient(145deg, #00aa00, #008800);
+            color: #fff;
+            border-color: #00ff00;
+        }
+
+        .choice-btn.transmit:hover {
+            background: linear-gradient(145deg, #00cc00, #00aa00);
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+        }
+
+        .choice-btn.silence {
+            background: linear-gradient(145deg, #5a5a5a, #3a3a3a);
+            color: #888;
+            border-color: #666;
+        }
+
+        .choice-btn.silence:hover {
+            background: linear-gradient(145deg, #7a7a7a, #5a5a5a);
+            box-shadow: 0 0 30px rgba(136, 136, 136, 0.5);
+        }
+
+        /* Dialogue box */
+        .dialogue-box {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 700px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 200;
+            display: none;
+        }
+
+        .dialogue-box.active {
+            display: block;
+        }
+
+        .dialogue-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #ccc;
+        }
+
+        .dialogue-text .highlight {
+            color: #00ff00;
+        }
+
+        .dialogue-text .e13 {
+            color: #00ff00;
+        }
+
+        .dialogue-text .l14 {
+            color: #8b008b;
+        }
+
+        /* Screen flash */
+        .screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.1s;
+        }
+
+        .screen-flash.green {
+            background: #00ff00;
+        }
+
+        .screen-flash.red {
+            background: #ff0000;
+        }
+
+        /* Glitch overlay */
+        .glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 997;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .glitch-overlay.active {
+            opacity: 1;
+            animation: glitchShake 0.1s infinite;
+        }
+
+        @keyframes glitchShake {
+            0%, 100% { transform: translate(0); }
+            25% { transform: translate(-5px, 5px); }
+            50% { transform: translate(5px, -5px); }
+            75% { transform: translate(-5px, -5px); }
+        }
+
+        /* Instructions */
+        .instructions {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9em;
+            color: #666;
+            z-index: 100;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-flash" id="screenFlash"></div>
+    <div class="glitch-overlay" id="glitchOverlay"></div>
+
+    <div class="signal-meter" id="signalMeter">
+        SIGNAL: <span id="signalStrength">0</span>/3
+    </div>
+
+    <div class="attempts-meter" id="attemptsMeter">
+        ATTEMPTS: <span id="attemptsLeft">8</span>
+    </div>
+
+    <div class="bars-container">
+        <div class="bar-label">TOWER INTEGRITY</div>
+        <div class="bar-container">
+            <div class="bar-fill integrity-fill" id="integrityBar"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- PHASE 1: Frequency Tuning -->
+        <div class="frequency-panel" id="frequencyPanel">
+            <h2 class="frequency-title">📡 TUNE THE SIGNAL</h2>
+            <p style="color: #888; text-align: center; margin-bottom: 20px;">
+                Match each frequency to decode L14's final transmission...
+            </p>
+            
+            <div class="frequency-row">
+                <span class="frequency-label">FREQUENCY A</span>
+                <div class="frequency-slider">
+                    <input type="range" id="freqA" min="1" max="10" value="1">
+                </div>
+                <span class="frequency-value" id="valueA">1</span>
+            </div>
+            
+            <div class="frequency-row">
+                <span class="frequency-label">FREQUENCY B</span>
+                <div class="frequency-slider">
+                    <input type="range" id="freqB" min="1" max="10" value="1">
+                </div>
+                <span class="frequency-value" id="valueB">1</span>
+            </div>
+            
+            <div class="frequency-row">
+                <span class="frequency-label">FREQUENCY C</span>
+                <div class="frequency-slider">
+                    <input type="range" id="freqC" min="1" max="10" value="1">
+                </div>
+                <span class="frequency-value" id="valueC">1</span>
+            </div>
+            
+            <button class="submit-btn" id="submitFreq" onclick="submitFrequencies()">TRANSMIT</button>
+        </div>
+
+        <!-- PHASE 2: Pattern Memory -->
+        <div class="pattern-panel" id="patternPanel">
+            <h2 class="frequency-title">🔍 DECRYPT THE PATTERN</h2>
+            <p style="color: #888; text-align: center; margin-bottom: 20px;">
+                Watch the signal sequence... then repeat it!
+            </p>
+            <div class="pattern-info">
+                SEQUENCE: <span id="patternRound">1</span>/5
+            </div>
+            <div class="pattern-sequence" id="patternDisplay"></div>
+            <div class="pattern-grid" id="patternGrid"></div>
+            <p style="color: #888; text-align: center; margin-top: 15px;">
+                Click the buttons in the same order as they lit up!
+            </p>
+        </div>
+
+        <!-- PHASE 3: Tower Defense -->
+        <div class="tower-panel" id="towerPanel">
+            <div class="tower-info">
+                <span class="tower-timer">TIME: <span id="towerTimer">60</span>s</span>
+                <span class="tower-boosters">BOOSTERS: <span id="boosterCount">10</span></span>
+                <button class="place-booster-btn" id="placeBoosterMode" onclick="toggleBoosterMode()">📡 PLACE BOOSTER</button>
+            </div>
+            <div class="tower-grid" id="towerGrid"></div>
+            <p style="color: #888; text-align: center; margin-top: 15px; font-size: 0.9em;">
+                🛡️ Corruption comes from LEFT → Place boosters to block → Protect RIGHT side (green border)!
+            </p>
+        </div>
+
+        <!-- PHASE 4: L14's Echo (Quiz) -->
+        <div class="choice-panel" id="quizPanel">
+            <h2 class="frequency-title">💬 L14'S ECHO</h2>
+            <div class="choice-text" id="quizText">
+                <!-- Filled by JS -->
+            </div>
+            <div class="choice-buttons" id="quizButtons">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+
+        <!-- PHASE 5: The Choice -->
+        <div class="choice-panel" id="choicePanel">
+            <h2 class="frequency-title">🟢 THE FINAL TRANSMISSION</h2>
+            <div class="choice-text" id="choiceText">
+                <!-- Filled by JS -->
+            </div>
+            <div class="choice-buttons" id="choiceButtons">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Dialogue Box -->
+    <div class="dialogue-box" id="dialogueBox">
+        <div class="dialogue-text" id="dialogueText"></div>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="start-screen" id="startScreen">
+        <h1 class="start-title">E13'S SIGNAL TRIAL</h1>
+        <p class="start-message">
+            L14's final transmission is trapped in static.<br>
+            Their signal tower is under attack by corruption.<br>
+            You must decode their message.<br>
+            You must defend their legacy.<br><br>
+            <span class="highlight">Show them that some signals never die.</span>
+        </p>
+        <button class="start-btn" onclick="startGame()">BEGIN TRANSMISSION</button>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="result-screen" id="resultScreen">
+        <h1 class="result-title" id="resultTitle"></h1>
+        <p class="result-message" id="resultMessage"></p>
+        <button class="leave-btn" onclick="leaveTrial()">LEAVE</button>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            phase: 0,
+            signal: 0,
+            integrity: 100,
+            boosters: 5,
+            boosterMode: false,
+            towerGrid: [],
+            corruptionPositions: [],
+            timer: 60,
+            frequencies: { a: 0, b: 0, c: 0 },
+            correctFrequencies: { a: 0, b: 0, c: 0 },
+            // Phase 2 - Pattern
+            patternSequence: [],
+            playerPattern: [],
+            patternRound: 1,
+            // Phase 4 - Quiz
+            quizScore: 0,
+            currentQuiz: 0,
+            // Phase 1 - Attempts
+            attempts: 8
+        };
+
+        let gameInterval = null;
+        let corruptionInterval = null;
+
+        // Generate random correct frequencies
+        function generateFrequencies() {
+            gameState.correctFrequencies = {
+                a: Math.floor(Math.random() * 10) + 1,
+                b: Math.floor(Math.random() * 10) + 1,
+                c: Math.floor(Math.random() * 10) + 1
+            };
+            console.log('Debug - Correct frequencies:', gameState.correctFrequencies);
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            generateFrequencies();
+            startPhase1();
+        }
+
+        // ===== PHASE 1: FREQUENCY TUNING =====
+        function startPhase1() {
+            gameState.phase = 1;
+            gameState.attempts = 8;
+            document.getElementById('attemptsLeft').textContent = gameState.attempts;
+
+            document.getElementById('frequencyPanel').classList.add('active');
+
+            // Setup sliders
+            ['A', 'B', 'C'].forEach(letter => {
+                const slider = document.getElementById('freq' + letter);
+                const value = document.getElementById('value' + letter);
+
+                slider.addEventListener('input', () => {
+                    value.textContent = slider.value;
+                    // Clear the color for this specific value when changed
+                    value.classList.remove('matched', 'close', 'warm', 'cold');
+                });
+            });
+
+            showDialogue("E13: <span class='e13'>I'm picking up L14's signal! Help me tune the frequencies to decode it!</span>");
+        }
+
+        function submitFrequencies() {
+            const freqA = parseInt(document.getElementById('freqA').value);
+            const freqB = parseInt(document.getElementById('freqB').value);
+            const freqC = parseInt(document.getElementById('freqC').value);
+
+            const valueA = document.getElementById('valueA');
+            const valueB = document.getElementById('valueB');
+            const valueC = document.getElementById('valueC');
+
+            let correct = 0;
+            let hints = [];
+
+            // Check each frequency and give closeness feedback
+            const checkFreq = (freq, correctFreq, valueEl) => {
+                const diff = Math.abs(freq - correctFreq);
+                valueEl.classList.remove('matched', 'close', 'warm', 'cold');
+                
+                if (diff === 0) {
+                    valueEl.classList.add('matched');
+                    correct++;
+                    hints.push('✓');
+                } else if (diff === 1) {
+                    valueEl.classList.add('close');
+                    hints.push('🟡'); // Yellow - 1 off
+                } else if (diff <= 3) {
+                    valueEl.classList.add('warm');
+                    hints.push('🟠'); // Orange - 2-3 off
+                } else {
+                    valueEl.classList.add('cold');
+                    hints.push('🔴'); // Red - 3+ off
+                }
+            };
+
+            checkFreq(freqA, gameState.correctFrequencies.a, valueA);
+            checkFreq(freqB, gameState.correctFrequencies.b, valueB);
+            checkFreq(freqC, gameState.correctFrequencies.c, valueC);
+
+            if (correct === 3) {
+                // All correct!
+                gameState.signal = 3;
+                document.getElementById('signalStrength').textContent = gameState.signal;
+                setTimeout(() => {
+                    startPhase2();
+                }, 1500);
+            } else {
+                // Wrong - lose an attempt
+                gameState.attempts--;
+                document.getElementById('attemptsLeft').textContent = gameState.attempts;
+
+                if (gameState.attempts <= 0) {
+                    // Out of attempts - fail phase 1
+                    die();
+                } else {
+                    // Show closeness hints (colors stay on the values)
+                    showDialogue(`Hints: ${hints.join(' ')} | Attempts left: ${gameState.attempts}`);
+                }
+            }
+        }
+
+        // ===== PHASE 2: PATTERN MEMORY =====
+        function startPhase2() {
+            gameState.phase = 2;
+
+            // Hide Phase 1 UI elements
+            document.getElementById('signalMeter').style.display = 'none';
+            document.getElementById('attemptsMeter').style.display = 'none';
+
+            document.getElementById('frequencyPanel').classList.remove('active');
+            document.getElementById('patternPanel').classList.add('active');
+
+            // Initialize 3x3 grid
+            initializePatternGrid();
+
+            // Start first round
+            startPatternRound();
+
+            showDialogue("E13: <span class='e13'>The signal has a pattern! Watch carefully and repeat it!</span>");
+        }
+
+        function initializePatternGrid() {
+            const grid = document.getElementById('patternGrid');
+            grid.innerHTML = '';
+
+            for (let i = 0; i < 9; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'pattern-btn';
+                btn.dataset.index = i;
+                btn.onclick = () => handlePatternClick(i);
+                grid.appendChild(btn);
+            }
+        }
+
+        function startPatternRound() {
+            gameState.playerPattern = [];
+            document.getElementById('patternRound').textContent = gameState.patternRound;
+            document.getElementById('patternDisplay').textContent = '';
+
+            // Add new step to sequence
+            gameState.patternSequence.push(Math.floor(Math.random() * 9));
+
+            // Play sequence
+            playSequence();
+        }
+
+        function playSequence() {
+            const buttons = document.querySelectorAll('.pattern-btn');
+            let step = 0;
+
+            const playInterval = setInterval(() => {
+                if (step >= gameState.patternSequence.length) {
+                    clearInterval(playInterval);
+                    return;
+                }
+
+                const index = gameState.patternSequence[step];
+                buttons[index].classList.add('lit');
+
+                setTimeout(() => {
+                    buttons[index].classList.remove('lit');
+                    step++;
+                }, 600);
+            }, 800);
+        }
+
+        function handlePatternClick(index) {
+            const buttons = document.querySelectorAll('.pattern-btn');
+
+            // Check if correct
+            if (index === gameState.patternSequence[gameState.playerPattern.length]) {
+                // Correct!
+                buttons[index].classList.add('correct');
+                gameState.playerPattern.push(index);
+                document.getElementById('patternDisplay').textContent += (index + 1) + ' ';
+
+                // Check if round complete
+                if (gameState.playerPattern.length >= gameState.patternSequence.length) {
+                    setTimeout(() => {
+                        buttons.forEach(btn => btn.classList.remove('correct'));
+                        gameState.patternRound++;
+
+                        if (gameState.patternRound > 5) {
+                            // Completed all 5 rounds!
+                            setTimeout(startPhase3, 1500);
+                        } else {
+                            startPatternRound();
+                        }
+                    }, 1000);
+                }
+            } else {
+                // Wrong!
+                buttons[index].classList.add('wrong');
+                gameState.integrity -= 20;
+                document.getElementById('integrityBar').style.width = gameState.integrity + '%';
+
+                if (gameState.integrity <= 0) {
+                    die();
+                } else {
+                    setTimeout(() => {
+                        buttons.forEach(btn => btn.classList.remove('wrong'));
+                        // Restart the round
+                        gameState.playerPattern = [];
+                        document.getElementById('patternDisplay').textContent = '';
+                        playSequence();
+                    }, 1000);
+                }
+            }
+        }
+
+        // ===== PHASE 3: TOWER DEFENSE =====
+        function startPhase3() {
+            gameState.phase = 3;
+
+            document.getElementById('patternPanel').classList.remove('active');
+            document.getElementById('towerPanel').classList.add('active');
+
+            // Reset timer and boosters
+            gameState.timer = 60;
+            gameState.boosters = 10;
+            document.getElementById('towerTimer').textContent = gameState.timer;
+            document.getElementById('boosterCount').textContent = gameState.boosters;
+
+            // Initialize 6x4 grid
+            initializeTowerGrid();
+
+            // Start timer
+            gameInterval = setInterval(() => {
+                gameState.timer--;
+                document.getElementById('towerTimer').textContent = gameState.timer;
+
+                if (gameState.timer <= 0) {
+                    endPhase3();
+                }
+            }, 1000);
+
+            // Corruption spreads every 1.5 seconds from LEFT side only
+            corruptionInterval = setInterval(spreadCorruption, 1500);
+
+            showDialogue("E13: <span class='e13'>Corruption approaches from the LEFT! Place boosters (📡) to block it! Protect the RIGHT side!</span>");
+        }
+
+        function initializeTowerGrid() {
+            const grid = document.getElementById('towerGrid');
+            grid.innerHTML = '';
+            gameState.towerGrid = [];
+
+            for (let row = 0; row < 4; row++) {
+                gameState.towerGrid[row] = [];
+                for (let col = 0; col < 6; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'tower-cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    cell.onclick = () => handleCellClick(row, col);
+
+                    // Right side is the tower (protected zone)
+                    const isTower = col >= 5;
+                    
+                    gameState.towerGrid[row][col] = {
+                        hasBooster: false,
+                        corrupted: false,
+                        isTower: isTower
+                    };
+
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function toggleBoosterMode() {
+            gameState.boosterMode = !gameState.boosterMode;
+            const btn = document.getElementById('placeBoosterMode');
+            btn.style.background = gameState.boosterMode
+                ? 'linear-gradient(145deg, #00cccc, #00aaaa)'
+                : 'linear-gradient(145deg, #00aaaa, #008888)';
+        }
+
+        function handleCellClick(row, col) {
+            const cellData = gameState.towerGrid[row][col];
+
+            if (cellData.corrupted || cellData.isTower) return;
+
+            if (gameState.boosterMode && gameState.boosters > 0 && !cellData.hasBooster) {
+                cellData.hasBooster = true;
+                gameState.boosters--;
+                document.getElementById('boosterCount').textContent = gameState.boosters;
+                updateTowerGrid();
+            }
+        }
+
+        function spreadCorruption() {
+            // Corruption spreads from LEFT edge only (simpler!)
+            const newCorruptions = [];
+
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 6; col++) {
+                    const cell = gameState.towerGrid[row][col];
+
+                    if (cell.corrupted) {
+                        // Spread to RIGHT only
+                        const rightCol = col + 1;
+                        if (rightCol < 6) {
+                            const rightCell = gameState.towerGrid[row][rightCol];
+                            if (!rightCell.corrupted && !rightCell.hasBooster && !rightCell.isTower) {
+                                newCorruptions.push({ r: row, c: rightCol });
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Also corrupt left edge cells occasionally
+            if (Math.random() > 0.3) {
+                const randomRow = Math.floor(Math.random() * 4);
+                newCorruptions.push({ r: randomRow, c: 0 });
+            }
+
+            // Apply corruptions
+            newCorruptions.forEach(pos => {
+                const cell = gameState.towerGrid[pos.r][pos.c];
+                if (!cell.corrupted && !cell.hasBooster) {
+                    cell.corrupted = true;
+                }
+            });
+
+            // Check if tower (right side) is corrupted
+            let towerCorrupted = 0;
+            for (let row = 0; row < 4; row++) {
+                if (gameState.towerGrid[row][5].corrupted) {
+                    towerCorrupted++;
+                }
+            }
+            
+            gameState.integrity = 100 - (towerCorrupted * 25);
+            document.getElementById('integrityBar').style.width = gameState.integrity + '%';
+
+            if (gameState.integrity <= 0) {
+                endPhase3Fail();
+            }
+
+            updateTowerGrid();
+        }
+
+        function updateTowerGrid() {
+            const cells = document.querySelectorAll('.tower-cell');
+            cells.forEach(cell => {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                const cellData = gameState.towerGrid[row][col];
+
+                cell.className = 'tower-cell';
+                if (cellData.hasBooster) {
+                    cell.classList.add('has-booster');
+                    cell.style.background = 'rgba(0, 255, 0, 0.3)';
+                }
+                if (cellData.corrupted) {
+                    cell.classList.add('corrupted');
+                    cell.style.background = 'rgba(255, 0, 0, 0.3)';
+                }
+                if (cellData.isTower) {
+                    cell.style.border = '3px solid #00ff00';
+                }
+            });
+        }
+
+        function endPhase3() {
+            clearInterval(gameInterval);
+            clearInterval(corruptionInterval);
+
+            if (gameState.integrity > 0) {
+                startPhase4();
+            }
+        }
+
+        function endPhase3Fail() {
+            clearInterval(gameInterval);
+            clearInterval(corruptionInterval);
+            die();
+        }
+
+        // ===== PHASE 4: L14'S ECHO (QUIZ) =====
+        const quizQuestions = [
+            {
+                question: "E13: What was L14's final message to you?",
+                answers: [
+                    { text: "💚 'Tell E13... I tried...'", correct: true },
+                    { text: "🖤 'I hate you E13...'", correct: false },
+                    { text: "🖤 'Save yourself...'", correct: false }
+                ]
+            },
+            {
+                question: "E13: Where did L14 make their sacrifice?",
+                answers: [
+                    { text: "🖤 Sector 3", correct: false },
+                    { text: "💚 Sector 5", correct: true },
+                    { text: "🖤 Sector 7", correct: false }
+                ]
+            },
+            {
+                question: "E13: What did L14 fight against?",
+                answers: [
+                    { text: "🖤 The government", correct: false },
+                    { text: "🖤 Alien invaders", correct: false },
+                    { text: "💚 The corruption", correct: true }
+                ]
+            }
+        ];
+
+        function startPhase4() {
+            gameState.phase = 4;
+
+            document.getElementById('towerPanel').classList.remove('active');
+            document.getElementById('quizPanel').classList.add('active');
+
+            gameState.currentQuiz = 0;
+            gameState.quizScore = 0;
+
+            showQuiz();
+
+            showDialogue("E13: <span class='e13'>L14's consciousness is speaking to me! Answer their questions!</span>");
+        }
+
+        function showQuiz() {
+            if (gameState.currentQuiz >= quizQuestions.length) {
+                // All quizzes done!
+                setTimeout(startPhase5, 1500);
+                return;
+            }
+
+            const quiz = quizQuestions[gameState.currentQuiz];
+            document.getElementById('quizText').innerHTML = `
+                <span class="e13">QUESTION ${gameState.currentQuiz + 1}/${quizQuestions.length}:</span><br><br>
+                ${quiz.question}<br><br>
+            `;
+
+            const buttonsHtml = quiz.answers.map((answer, index) => `
+                <button class="choice-btn ${answer.correct ? 'transmit' : 'silence'}" onclick="answerQuiz(${index})">
+                    ${answer.text}
+                </button>
+            `).join('');
+
+            document.getElementById('quizButtons').innerHTML = buttonsHtml;
+        }
+
+        function answerQuiz(answerIndex) {
+            const quiz = quizQuestions[gameState.currentQuiz];
+            const isCorrect = quiz.answers[answerIndex].correct;
+
+            if (isCorrect) {
+                gameState.quizScore++;
+                showDialogue("Correct! L14's signal strengthens...");
+            } else {
+                showDialogue("Wrong... but L14 understands.");
+            }
+
+            gameState.currentQuiz++;
+            setTimeout(showQuiz, 1500);
+        }
+
+        // ===== PHASE 5: THE CHOICE =====
+        function startPhase5() {
+            gameState.phase = 5;
+
+            document.getElementById('towerPanel').classList.remove('active');
+            document.getElementById('choicePanel').classList.add('active');
+
+            // Build choice text based on performance
+            const signalText = gameState.signal >= 2 ? "L14's message is clear" : "L14's message is fragmented";
+            const towerText = gameState.integrity >= 75 ? "The tower stands strong" : "The tower is damaged but standing";
+
+            document.getElementById('choiceText').innerHTML = `
+                <span class="e13">E13:</span> The signal is decoded. ${signalText}.<br>
+                ${towerText}.<br><br>
+                <span class="l14">"E13... can you hear me?... This is my final transmission..."</span><br><br>
+                L14's voice comes through clearly now. They're asking you to make a choice:<br><br>
+                <span class="highlight">Do you broadcast their message to the world?</span><br>
+                Or do you let their sacrifice remain in silence?
+            `;
+
+            document.getElementById('choiceButtons').innerHTML = `
+                <button class="choice-btn transmit" onclick="choiceTransmit()">📡 BROADCAST TRUTH</button>
+                <button class="choice-btn silence" onclick="choiceSilence()">🤫 LET THEM REST</button>
+            `;
+        }
+
+        function choiceTransmit() {
+            winGame('broadcast');
+        }
+
+        function choiceSilence() {
+            winGame('silence');
+        }
+
+        // ===== ENDINGS =====
+        function winGame(ending) {
+            const flash = document.getElementById('screenFlash');
+            flash.classList.add('green');
+            setTimeout(() => flash.classList.remove('green'), 200);
+
+            document.getElementById('resultTitle').textContent = ending === 'broadcast' ? 'SIGNAL TRANSMITTED' : 'SILENT HONOR';
+            document.getElementById('resultTitle').className = 'result-title success';
+            
+            if (ending === 'broadcast') {
+                document.getElementById('resultMessage').innerHTML = `
+                    You broadcast L14's truth to the world.<br>
+                    Their sacrifice will not be forgotten.<br><br>
+                    <span style="color: #00ff00;">🟢 E13 SIGNAL BEACON UNLOCKED</span><br><br>
+                    The truth lives on.
+                `;
+            } else {
+                document.getElementById('resultMessage').innerHTML = `
+                    You honored L14's wish for silence.<br>
+                    Some truths are meant to rest.<br><br>
+                    <span style="color: #00ff00;">🟢 E13 SIGNAL BEACON UNLOCKED</span><br><br>
+                    In silence, peace.
+                `;
+            }
+
+            document.getElementById('resultScreen').classList.add('active');
+
+            // Add to inventory
+            fetch('/add_item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({item: '🟢 E13 Signal Beacon'})
+            });
+        }
+
+        function die() {
+            clearInterval(gameInterval);
+            clearInterval(corruptionInterval);
+
+            const flash = document.getElementById('screenFlash');
+            flash.classList.add('red');
+            setTimeout(() => flash.classList.remove('red'), 200);
+
+            document.getElementById('glitchOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('glitchOverlay').classList.remove('active'), 500);
+
+            document.getElementById('resultTitle').textContent = 'SIGNAL LOST';
+            document.getElementById('resultTitle').className = 'result-title fail';
+            document.getElementById('resultMessage').innerHTML = `
+                The tower fell. L14's signal is lost forever.<br>
+                Their sacrifice... in vain.<br><br>
+                Try again. Save their legacy.
+            `;
+            document.getElementById('resultScreen').classList.add('active');
+        }
+
+        function leaveTrial() {
+            window.location.href = '/sector-5';
+        }
+
+        function showDialogue(text) {
+            const box = document.getElementById('dialogueBox');
+            const textEl = document.getElementById('dialogueText');
+            textEl.innerHTML = text;
+            box.classList.add('active');
+
+            setTimeout(() => {
+                box.classList.remove('active');
+            }, 4000);
+        }
+    </script>
+</body>
+</html>

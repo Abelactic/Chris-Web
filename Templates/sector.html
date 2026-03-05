@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector {{ sector_number }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0a;
+            min-height: 100vh;
+            color: #888;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, transparent 50%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sector-header {
+            font-family: 'VT323', monospace;
+            font-size: 3em;
+            color: #666;
+            text-align: center;
+            letter-spacing: 10px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(100, 100, 100, 0.3);
+        }
+
+        .room {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .room {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .furniture-container {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid #333;
+            padding: 30px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .furniture-container:hover {
+            border-color: #555;
+            box-shadow: 0 0 20px rgba(100, 100, 100, 0.1);
+        }
+
+        .furniture-title {
+            font-family: 'VT323', monospace;
+            font-size: 1.8em;
+            color: #555;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        /* Bed Styles */
+        .bed {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bed-frame {
+            width: 80%;
+            height: 140px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 2px solid #444;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .bed-frame::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 5%;
+            width: 90%;
+            height: 20px;
+            background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+            border: 2px solid #444;
+            border-radius: 5px;
+        }
+
+        .pillow {
+            position: absolute;
+            top: -5px;
+            left: 10%;
+            width: 25%;
+            height: 30px;
+            background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .blanket {
+            position: absolute;
+            bottom: 10px;
+            right: 10%;
+            width: 50%;
+            height: 60px;
+            background: linear-gradient(135deg, #3d3d3d 0%, #2d2d2d 100%);
+            border: 1px solid #444;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .bed-posts {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bed-post {
+            position: absolute;
+            width: 8px;
+            height: 50px;
+            background: linear-gradient(90deg, #333 0%, #222 100%);
+            border: 1px solid #444;
+        }
+
+        .bed-post:nth-child(1) { top: -25px; left: 5%; }
+        .bed-post:nth-child(2) { top: -25px; right: 5%; }
+        .bed-post:nth-child(3) { bottom: -25px; left: 5%; }
+        .bed-post:nth-child(4) { bottom: -25px; right: 5%; }
+
+        /* Closet Styles */
+        .closet {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .closet-body {
+            width: 70%;
+            height: 200px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border: 3px solid #444;
+            border-radius: 5px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+        }
+
+        .closet-door {
+            flex: 1;
+            border-right: 1px solid #333;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .closet-door:last-child {
+            border-right: none;
+        }
+
+        .closet-door:hover {
+            background: rgba(60, 60, 60, 0.3);
+        }
+
+        .closet-door.open {
+            transform: perspective(600px) rotateY(-30deg);
+            background: rgba(40, 40, 40, 0.5);
+        }
+
+        .closet-handle {
+            position: absolute;
+            top: 50%;
+            width: 8px;
+            height: 25px;
+            background: linear-gradient(90deg, #555 0%, #333 100%);
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+
+        .closet-door:first-child .closet-handle {
+            right: 10px;
+        }
+
+        .closet-door:last-child .closet-handle {
+            left: 10px;
+        }
+
+        .closet-interior {
+            position: absolute;
+            top: 10%;
+            left: 15%;
+            width: 70%;
+            height: 80%;
+            background: #0a0a0a;
+            border-radius: 3px;
+            display: none;
+            z-index: 5;
+        }
+
+        .closet-door.open ~ .closet-interior {
+            display: block;
+        }
+
+        .closet-shelf {
+            position: absolute;
+            top: 20%;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: #222;
+        }
+
+        .hanger {
+            position: absolute;
+            top: 25%;
+            width: 3px;
+            height: 30px;
+            background: #444;
+        }
+
+        .hanger:nth-child(2) { left: 25%; }
+        .hanger:nth-child(3) { left: 50%; }
+        .hanger:nth-child(4) { left: 75%; }
+
+        .closet-top {
+            width: 70%;
+            height: 30px;
+            background: linear-gradient(135deg, #333 0%, #222 100%);
+            border: 2px solid #444;
+            border-radius: 5px 5px 0 0;
+            margin-bottom: 5px;
+        }
+
+        .sector-info {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(20, 20, 20, 0.6);
+            border: 1px solid #333;
+            border-radius: 5px;
+        }
+
+        .sector-info p {
+            font-family: 'Share Tech Mono', monospace;
+            color: #666;
+            line-height: 1.8;
+            letter-spacing: 1px;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 30px;
+            color: #555;
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 1.3em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 12px 30px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #777;
+            border-color: #555;
+            background: rgba(40, 40, 40, 0.3);
+        }
+
+        .sector-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .sector-nav a {
+            color: #444;
+            text-decoration: none;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9em;
+            padding: 8px 15px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .sector-nav a:hover {
+            color: #666;
+            border-color: #555;
+            background: rgba(40, 40, 40, 0.3);
+        }
+
+        .sector-nav a.active {
+            color: #888;
+            border-color: #666;
+            background: rgba(50, 50, 50, 0.5);
+        }
+
+        /* Static noise */
+        .static-noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.01' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 995;
+        }
+    </style>
+</head>
+<body>
+    <div class="static-noise"></div>
+
+    <div class="container">
+        <h1 class="sector-header">Sector {{ sector_number }}</h1>
+
+        <div class="room">
+            <div class="furniture-container">
+                <h2 class="furniture-title">Bed</h2>
+                <div class="bed">
+                    <div class="bed-frame">
+                        <div class="bed-posts">
+                            <div class="bed-post"></div>
+                            <div class="bed-post"></div>
+                            <div class="bed-post"></div>
+                            <div class="bed-post"></div>
+                        </div>
+                        <div class="pillow"></div>
+                        <div class="blanket"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="furniture-container">
+                <h2 class="furniture-title">Closet</h2>
+                <div class="closet">
+                    <div class="closet-top"></div>
+                    <div class="closet-body">
+                        <div class="closet-door" onclick="this.classList.toggle('open')">
+                            <div class="closet-handle"></div>
+                        </div>
+                        <div class="closet-door" onclick="this.classList.toggle('open')">
+                            <div class="closet-handle"></div>
+                        </div>
+                        <div class="closet-interior">
+                            <div class="closet-shelf"></div>
+                            <div class="hanger"></div>
+                            <div class="hanger"></div>
+                            <div class="hanger"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sector-info">
+            <p>Sector {{ sector_number }} - A quiet living space within the facility.</p>
+            <p>The bed provides rest. The closet stores your belongings.</p>
+            <p>Subject Status: <strong>{{ 'DECEASED' if sector_number in [2, 3, 7, 9] else 'ALIVE' if sector_number in [5] else 'CLASSIFIED' if sector_number == 1 else 'UNKNOWN' }}</strong></p>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/you-are-not-alone" class="back-link">← Return</a>
+        </div>
+    </div>
+
+    <script>
+        // Random flicker effect
+        setInterval(() => {
+            const containers = document.querySelectorAll('.furniture-container');
+            const randomContainer = containers[Math.floor(Math.random() * containers.length)];
+            randomContainer.style.opacity = 0.7;
+            setTimeout(() => {
+                randomContainer.style.opacity = 1;
+            }, 100);
+        }, 3000);
+    </script>
+</body>
+</html>

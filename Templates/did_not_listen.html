@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="10; url=/" />
+    <title>You Did Not Listen...</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .container {
+            font-size: 2em;
+            position: relative;
+        }
+
+        .countdown {
+            margin-top: 20px;
+            font-size: 1.5em;
+            color: #ff6b6b;
+        }
+
+        .sudden-text {
+            position: absolute;
+            font-size: 2em;
+            font-weight: bold;
+            color: #FFD700; /* Gold color for better visibility */
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>You Did Not Listen...</h1>
+        <p style="visibility: hidden;">Returning to home page in <span id="countdown" style="visibility: hidden;">10</span> seconds</p>
+
+
+        </div>
+        
+        </div>
+    </div>
+
+    <script>
+        // Simple countdown script (runs invisibly)
+        let count = 10;
+        const countdownElement = document.getElementById('countdown');
+
+        const countdownInterval = setInterval(() => {
+            count--;
+            if (count >= 0) {
+                countdownElement.textContent = count;
+            } else {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+
+        // Array of texts to appear suddenly
+        const texts = [
+            { content: "2. de Python", delay: 2000 },
+            { content: "Listen next time!", delay: 4000 },
+            { content: "This is a warning", delay: 6000 },
+            { content: "Don't ignore instructions", delay: 8000 }
+        ];
+
+        // Create text elements dynamically
+        texts.forEach((textData, index) => {
+            setTimeout(function() {
+                const newText = document.createElement('div');
+                newText.className = 'sudden-text';
+                newText.textContent = textData.content;
+                
+                // Add to body
+                document.body.appendChild(newText);
+                
+                // Temporarily display the element to measure its dimensions
+                newText.style.visibility = 'hidden';
+                newText.style.display = 'block';
+                
+                // Force a reflow to ensure the element is measured
+                newText.offsetHeight; // Trigger reflow
+                
+                // Calculate random position within the viewport
+                const maxX = window.innerWidth - newText.offsetWidth;
+                const maxY = window.innerHeight - newText.offsetHeight;
+
+                const randomX = Math.floor(Math.random() * Math.max(maxX, 1)); // Use max to ensure positive value
+                const randomY = Math.floor(Math.random() * Math.max(maxY, 1));
+
+                newText.style.left = randomX + 'px';
+                newText.style.top = randomY + 'px';
+                newText.style.visibility = 'visible';
+                newText.style.display = 'block';
+                
+                // Set different durations for different texts
+                let duration = 3000; // Default duration
+                
+                // Make "2. de Python" disappear faster (1.5 seconds)
+                if (textData.content === "2. de Python") {
+                    duration = 1500;
+                }
+                
+        // Optional: Remove text after some time to prevent clutter
+        setTimeout(() => {
+            newText.remove();
+        }, duration);
+    }, textData.delay);
+});
+
+// Function to collect coins by clicking
+async function collectCoin(element) {
+    // Generate a unique ID for this coin if it doesn't have one
+    if (!element.id) {
+        element.id = 'coin-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
+    }
+    
+    // Check if this coin has already been collected
+    if (element.classList.contains('collected')) {
+        return; // Exit if already collected
+    }
+    
+    // Visual feedback
+    element.style.transform = 'scale(1.2)';
+    element.style.transition = 'transform 0.2s';
+
+    try {
+        const response = await fetch('/earn_coin', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({coin_id: element.id})
+        });
+
+        const data = await response.json();
+
+        if(data.success) {
+            // Update all coin counters on the page
+            document.querySelectorAll('.coin-count').forEach(counter => {
+                counter.textContent = `Coins: ${data.new_coins}`;
+            });
+
+            // Mark coin as collected and make it disappear
+            element.classList.add('collected');
+            element.style.opacity = '0';
+            element.style.pointerEvents = 'none'; // Disable further clicks
+
+            // Add animation effect
+            element.style.color = '#ffcc00'; // Make coin shine
+            setTimeout(() => {
+                element.style.transform = 'scale(1)';
+                element.style.color = 'white';
+            }, 200);
+        }
+    } catch (error) {
+        console.error('Error collecting coin:', error);
+        element.style.transform = 'scale(1)'; // Reset in case of error
+    }
+}
+
+// Function to initialize collected coins when page loads
+async function initializeCollectedCoins() {
+    try {
+        const response = await fetch('/get_coins', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if(data.success && data.collected_coins) {
+            // Hide all coins that have been collected
+            document.querySelectorAll('.clickable-coin').forEach(coin => {
+                if (data.collected_coins.includes(coin.id)) {
+                    coin.classList.add('collected');
+                    coin.style.opacity = '0';
+                    coin.style.pointerEvents = 'none';
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Error initializing collected coins:', error);
+    }
+}
+
+// Call the initialization function when the page loads
+document.addEventListener('DOMContentLoaded', initializeCollectedCoins);
+    </script>
+</body>
+</html>

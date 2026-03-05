@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- las mejores -->
+    <meta charset="UTF-8">
+    <title>The Piano Room</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .room-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            padding: 40px;
+        }
+
+        .room-title {
+            text-align: center;
+            color: #c9a961;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(201, 169, 97, 0.5);
+            letter-spacing: 5px;
+        }
+
+        .piano {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(180deg, #2a1810 0%, #1a0f0a 100%);
+            padding: 30px 20px 20px;
+            border-radius: 10px;
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.8),
+                inset 0 2px 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .piano::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #c9a961, transparent);
+            opacity: 0.5;
+        }
+
+        .key-container {
+            position: relative;
+            display: flex;
+        }
+
+        .white-keys {
+            display: flex;
+        }
+
+        .white-key {
+            width: 50px;
+            height: 200px;
+            background: linear-gradient(180deg, #fff 0%, #e8e8e8 100%);
+            border: 1px solid #999;
+            border-radius: 0 0 3px 3px;
+            margin: 0 1px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 8px 15px rgba(0, 0, 0, 0.4),
+                inset 0 -8px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .white-key:hover {
+            background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
+        }
+
+        .white-key:active, .white-key.active {
+            background: linear-gradient(180deg, #d0d0d0 0%, #c0c0c0 100%);
+            transform: translateY(4px);
+            box-shadow: 
+                0 3px 8px rgba(0, 0, 0, 0.4),
+                inset 0 -3px 5px rgba(0, 0, 0, 0.15);
+        }
+
+        .white-key.playing {
+            background: linear-gradient(180deg, #c9a961 0%, #b89650 100%);
+            box-shadow: 
+                0 8px 15px rgba(0, 0, 0, 0.4),
+                0 0 20px rgba(201, 169, 97, 0.6);
+        }
+
+        .white-key .note-label {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #666;
+            font-size: 11px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .black-keys {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 130px;
+            pointer-events: none;
+        }
+
+        .black-key {
+            width: 32px;
+            height: 125px;
+            background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+            border-radius: 0 0 2px 2px;
+            position: absolute;
+            z-index: 10;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                0 8px 20px rgba(0, 0, 0, 0.6),
+                inset 0 -5px 10px rgba(255, 255, 255, 0.1);
+            border: 1px solid #000;
+            pointer-events: auto;
+        }
+
+        .black-key:hover {
+            background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+        }
+
+        .black-key:active, .black-key.active {
+            background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+            transform: translateY(4px);
+            box-shadow: 
+                0 3px 10px rgba(0, 0, 0, 0.6),
+                inset 0 -3px 5px rgba(255, 255, 255, 0.1);
+        }
+
+        .black-key.playing {
+            background: linear-gradient(180deg, #5a4a3a 0%, #3a2a1a 100%);
+            box-shadow: 
+                0 8px 20px rgba(0, 0, 0, 0.6),
+                0 0 20px rgba(90, 74, 58, 0.6);
+        }
+
+        .black-key .note-label {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888;
+            font-size: 9px;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .music-notes {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .floating-note {
+            position: absolute;
+            color: rgba(201, 169, 97, 0.3);
+            font-size: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(10deg); opacity: 0.6; }
+        }
+
+        .hint-text {
+            text-align: center;
+            color: #666;
+            margin-top: 30px;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #c9a961;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px 20px;
+            border: 1px solid #c9a961;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: rgba(201, 169, 97, 0.2);
+            box-shadow: 0 0 20px rgba(201, 169, 97, 0.4);
+        }
+
+        .basement-link {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #8b0000;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px 20px;
+            border: 2px solid #8b0000;
+            border-radius: 5px;
+            transition: all 0.3s;
+            display: none;
+            animation: pulse-glow 2s infinite;
+        }
+
+        .basement-link.active {
+            display: block;
+        }
+
+        .basement-link:hover {
+            background: rgba(139, 0, 0, 0.3);
+            box-shadow: 0 0 30px rgba(139, 0, 0, 0.6);
+        }
+
+        .reset-link {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 10px 20px;
+            border: 1px solid #666;
+            border-radius: 5px;
+            transition: all 0.3s;
+            display: none;
+            cursor: pointer;
+        }
+
+        .reset-link.active {
+            display: block;
+        }
+
+        .reset-link:hover {
+            background: rgba(100, 100, 100, 0.3);
+            color: #c9a961;
+            border-color: #c9a961;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(139, 0, 0, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(139, 0, 0, 0.8); }
+        }
+
+        .door-status {
+            text-align: center;
+            color: #c9a961;
+            margin-top: 15px;
+            font-size: 14px;
+            font-style: italic;
+            min-height: 20px;
+        }
+
+        .end-demo-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            pointer-events: auto;
+        }
+
+        .end-demo-overlay.active {
+            display: flex;
+        }
+
+        .end-demo-text {
+            color: #c9a961;
+            font-size: 3em;
+            text-align: center;
+            text-shadow: 0 0 30px rgba(201, 169, 97, 0.8);
+            letter-spacing: 8px;
+            margin-bottom: 20px;
+        }
+
+        .end-demo-subtext {
+            color: #888;
+            font-size: 1.2em;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Leave Room</a>
+
+    <div class="end-demo-overlay" id="endDemoOverlay">
+        <div class="end-demo-text">END OF DEMO</div>
+        <div class="end-demo-subtext">Thank you for playing</div>
+    </div>
+
+    <div class="music-notes" id="musicNotes"></div>
+
+    <div class="room-container">
+        <h1 class="room-title">🎹 The Piano Room 🎹</h1>
+
+        <div class="piano">
+            <div class="key-container" id="piano">
+                <!-- 11 white keys -->
+                <div class="white-keys">
+                    <div class="white-key" data-note="B3"><span class="note-label">B3</span></div>
+                    <div class="white-key" data-note="C4"><span class="note-label">C4</span></div>
+                    <div class="white-key" data-note="D4"><span class="note-label">D4</span></div>
+                    <div class="white-key" data-note="E4"><span class="note-label">E4</span></div>
+                    <div class="white-key" data-note="F4"><span class="note-label">F4</span></div>
+                    <div class="white-key" data-note="G4"><span class="note-label">G4</span></div>
+                    <div class="white-key" data-note="A4"><span class="note-label">A4</span></div>
+                    <div class="white-key" data-note="B4"><span class="note-label">B4</span></div>
+                    <div class="white-key" data-note="C5"><span class="note-label">C5</span></div>
+                    <div class="white-key" data-note="D5"><span class="note-label">D5</span></div>
+                    <div class="white-key" data-note="E5"><span class="note-label">E5</span></div>
+                </div>
+                <!-- 7 black keys positioned over white keys -->
+                <div class="black-keys">
+                    <div class="black-key" data-note="C#4" style="left: 36px;"><span class="note-label">C#4</span></div>
+                    <div class="black-key" data-note="D#4" style="left: 88px;"><span class="note-label">D#4</span></div>
+                    <div class="black-key" data-note="F#4" style="left: 192px;"><span class="note-label">F#4</span></div>
+                    <div class="black-key" data-note="G#4" style="left: 244px;"><span class="note-label">G#4</span></div>
+                    <div class="black-key" data-note="A#4" style="left: 296px;"><span class="note-label">A#4</span></div>
+                    <div class="black-key" data-note="C#5" style="left: 400px;"><span class="note-label">C#5</span></div>
+                    <div class="black-key" data-note="D#5" style="left: 452px;"><span class="note-label">D#5</span></div>
+                </div>
+            </div>
+        </div>
+
+        <p class="hint-text">Click the keys to play. There's a secret melody to discover...</p>
+        <p class="hint-text" style="margin-top: 15px; color: #888; font-style: italic;">"The seventh guest was the only one that left with their life"</p>
+        <p class="hint-text" style="margin-top: 10px; color: #c9a961;" id="noteCounter">Notes remaining: 18</p>
+        <p class="hint-text" style="margin-top: 5px; color: #888; font-size: 12px;" id="doorStatus"></p>
+    </div>
+
+    <a href="/" class="back-link">← Leave Room</a>
+    <a href="/basement" class="basement-link" id="basementLink">🩸 Enter Basement 🩸</a>
+    <span class="reset-link" id="resetLink" onclick="resetSequence()">🔄 Reset Sequence</span>
+
+    <script>
+        // Audio context for playing piano sounds
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const noteFrequencies = {
+            'B3': 246.94,
+            'C4': 261.63, 'C#4': 277.18,
+            'D4': 293.66, 'D#4': 311.13,
+            'E4': 329.63,
+            'F4': 349.23, 'F#4': 369.99,
+            'G4': 392.00, 'G#4': 415.30,
+            'A4': 440.00, 'A#4': 466.16,
+            'B4': 493.88,
+            'C5': 523.25, 'C#5': 554.37,
+            'D5': 587.33, 'D#5': 622.25,
+            'E5': 659.25
+        };
+
+        // Secret sequence to unlock - 18 notes (Seven Guest melody)
+        const secretSequence = ['B3', 'B4', 'F#4', 'G4', 'E4', 'D#4', 'E4', 'F#4', 'E4', 'B3', 'B4', 'C5', 'B4', 'A4', 'G4', 'F#4', 'E4', 'F#4'];
+        let currentSequence = [];
+        let sequenceComplete = false;
+        let doorUnlocked = false;
+
+        function playNote(frequency) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'triangle';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 1.5);
+        }
+
+        function checkSequence(note) {
+            // If sequence is complete and door is showing, don't process notes
+            // (user must close door first to reset)
+            if (sequenceComplete && doorUnlocked) return;
+
+            // Check if the current note matches the expected note in sequence
+            const expectedNote = secretSequence[currentSequence.length];
+
+            if (note !== expectedNote) {
+                // Wrong note - reset sequence
+                currentSequence = [];
+                console.log('Sequence reset! Start over.');
+                document.getElementById('noteCounter').textContent = 'Notes remaining: 18';
+                document.getElementById('doorStatus').textContent = 'Sequence reset... Try again.';
+                setTimeout(() => {
+                    document.getElementById('doorStatus').textContent = '';
+                }, 2000);
+                return;
+            }
+
+            currentSequence.push(note);
+
+            // Show progress
+            const remaining = secretSequence.length - currentSequence.length;
+            document.getElementById('noteCounter').textContent = 'Notes remaining: ' + remaining;
+
+            // Check if sequence is complete
+            if (currentSequence.length === secretSequence.length) {
+                sequenceComplete = true;
+                doorUnlocked = true;
+                document.getElementById('noteCounter').textContent = 'All notes played!';
+                document.getElementById('doorStatus').textContent = 'A secret passage opens...';
+                document.getElementById('basementLink').classList.add('active');
+                document.getElementById('resetLink').classList.add('active');
+            }
+        }
+
+        function createFloatingNote(x, y) {
+            const notes = ['♪', '♫', '♬', '♩'];
+            const note = document.createElement('div');
+            note.className = 'floating-note';
+            note.textContent = notes[Math.floor(Math.random() * notes.length)];
+            note.style.left = x + 'px';
+            note.style.top = y + 'px';
+            note.style.animationDelay = Math.random() * 0.5 + 's';
+            document.getElementById('musicNotes').appendChild(note);
+
+            setTimeout(() => {
+                note.remove();
+            }, 3000);
+        }
+
+        // Click/touch events
+        document.querySelectorAll('.white-key, .black-key').forEach(key => {
+            key.addEventListener('click', function(e) {
+                const note = this.dataset.note;
+                const rect = this.getBoundingClientRect();
+
+                playNote(noteFrequencies[note]);
+                checkSequence(note);
+                createFloatingNote(rect.left + rect.width / 2, rect.top);
+
+                this.classList.add('playing');
+                setTimeout(() => this.classList.remove('playing'), 200);
+            });
+        });
+
+        // Ambient floating notes
+        setInterval(() => {
+            const container = document.querySelector('.room-container');
+            const rect = container.getBoundingClientRect();
+            const x = rect.left + Math.random() * rect.width;
+            const y = rect.top + Math.random() * rect.height * 0.5;
+            createFloatingNote(x, y);
+        }, 2000);
+
+        // Trigger end of demo when user enters the room
+        window.addEventListener('DOMContentLoaded', function() {
+            endDemo();
+        });
+
+        // Reset sequence function
+        function resetSequence() {
+            sequenceComplete = false;
+            doorUnlocked = false;
+            currentSequence = [];
+            document.getElementById('noteCounter').textContent = 'Notes remaining: 18';
+            document.getElementById('doorStatus').textContent = '';
+            document.getElementById('basementLink').classList.remove('active');
+            document.getElementById('resetLink').classList.remove('active');
+        }
+
+        // End of demo - block all interactions
+        function endDemo() {
+            document.getElementById('endDemoOverlay').classList.add('active');
+            // Disable all key interactions
+            document.querySelectorAll('.white-key, .black-key').forEach(key => {
+                key.style.pointerEvents = 'none';
+                key.style.opacity = '0.5';
+            });
+            // Hide interactive elements
+            document.querySelector('.back-link').style.pointerEvents = 'none';
+            document.querySelector('.back-link').style.opacity = '0.3';
+            document.getElementById('basementLink').style.pointerEvents = 'none';
+            document.getElementById('resetLink').style.pointerEvents = 'none';
+        }
+    </script>
+</body>
+</html>

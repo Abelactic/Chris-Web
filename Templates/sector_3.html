@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector 3 - DECEASED</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #8b8b8b;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* PURPLE tint for Sector 3 - L14 */
+        .sector-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(139,0,139,0.1) 0%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sector-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .sector-number {
+            font-family: 'VT323', monospace;
+            font-size: 6em;
+            color: #8b008b;
+            text-transform: uppercase;
+            letter-spacing: 20px;
+            text-shadow: 0 0 30px rgba(139,0,139,0.5);
+            animation: pulse-purple 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-purple {
+            0%, 100% { text-shadow: 0 0 30px rgba(139,0,139,0.5); opacity: 1; }
+            50% { text-shadow: 0 0 50px rgba(139,0,139,0.8); opacity: 0.8; }
+        }
+
+        .sector-status {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5em;
+            color: #8b008b;
+            letter-spacing: 10px;
+            margin-top: 10px;
+        }
+
+        .data-panel {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid #333;
+            border-left: 3px solid #8b008b;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .data-panel h3 {
+            font-family: 'VT323', monospace;
+            color: #666;
+            font-size: 1.4em;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.95em;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .data-value {
+            color: #888;
+        }
+
+        .data-value.critical {
+            color: #8b008b;
+        }
+
+        .log-entry {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 2px solid #8b008b;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .log-timestamp {
+            color: #8b008b;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: rgba(139, 0, 139, 0.1);
+            border: 1px solid #8b008b;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .warning-box p {
+            color: #8b008b;
+            font-size: 1.1em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Trial button - only shows when unlocked */
+        .trial-container {
+            display: none;
+            margin: 40px 0;
+            text-align: center;
+        }
+
+        .trial-container.unlocked {
+            display: block;
+            animation: trialAppear 0.5s ease-out;
+        }
+
+        @keyframes trialAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .trial-btn {
+            font-family: 'VT323', monospace;
+            font-size: 2em;
+            color: #fff;
+            background: linear-gradient(145deg, #8b008b, #5a005a);
+            border: 3px solid #ff4444;
+            padding: 20px 60px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            box-shadow: 0 0 30px rgba(139, 0, 139, 0.5);
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .trial-btn:hover {
+            background: linear-gradient(145deg, #aa00aa, #8b008b);
+            box-shadow: 0 0 50px rgba(139, 0, 139, 0.8);
+            transform: scale(1.05);
+        }
+
+        .trial-btn::before {
+            content: '💜 ';
+        }
+
+        .trial-btn::after {
+            content: ' 💜';
+        }
+
+        .trial-message {
+            color: #00ff00;
+            font-family: 'VT323', monospace;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        .subject-info {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .subject-avatar {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #8b008b;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            background: rgba(139, 0, 139, 0.1);
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { box-shadow: 0 0 20px rgba(139,0,139,0.3); }
+            50% { box-shadow: 0 0 40px rgba(139,0,139,0.6); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            color: #666;
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 15px 40px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #8b008b;
+            border-color: #8b008b;
+            background: rgba(139, 0, 139, 0.1);
+        }
+
+        .center-link {
+            display: block;
+            text-align: center;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: rgba(139, 0, 139, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .friendship-log {
+            background: rgba(139, 0, 139, 0.05);
+            border: 2px solid #8b008b;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        .friendship-log h4 {
+            font-family: 'VT323', monospace;
+            color: #8b008b;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            letter-spacing: 3px;
+        }
+
+        .e13-reference {
+            color: #00ff00;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="sector-overlay"></div>
+
+    <div class="container">
+        <div class="sector-header">
+            <h1 class="sector-number">SECTOR 3</h1>
+            <div class="sector-status">⚠ DECEASED ⚠</div>
+        </div>
+
+        <div class="subject-info">
+            <div class="subject-avatar">🟣</div>
+            <h2 style="font-family: 'VT323'; color: #666; letter-spacing: 5px; font-size: 2em;">SUBJECT L14</h2>
+            <p style="color: #8b008b; font-size: 0.9em;">The Loyal Friend - Never left their side</p>
+        </div>
+
+        <div class="data-panel">
+            <h3>Sector Data</h3>
+            <div class="data-row">
+                <span class="data-label">Access Code:</span>
+                <span class="data-value">3L-7721-OMEGA</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Status:</span>
+                <span class="data-value critical">TERMINAL</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Last Contact:</span>
+                <span class="data-value">E13 (Sector 5)</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Recovery Team:</span>
+                <span class="data-value critical">NONE</span>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <p>⚠ TEMPORAL ANOMALY DETECTED ⚠</p>
+            <p style="font-size: 0.8em; margin-top: 10px; color: #666;">Subject's final moments are stuck in a repeating loop</p>
+        </div>
+
+        <!-- Trial Container - Shows when unlocked -->
+        <div class="trial-container" id="trialContainer">
+            <p class="trial-message">⚠ L14'S TRIAL IS NOW ACCESSIBLE ⚠</p>
+            <a href="/l14-trial" class="trial-btn">BEGIN TRIAL</a>
+        </div>
+
+        <div class="data-panel">
+            <h3>Recovery Logs</h3>
+            <div class="log-entry">
+                <span class="log-timestamp">[LOG 03-7721]</span><br>
+                Subject L14 was known for their unwavering loyalty and kindness.
+                Always put others before themselves. Never left a friend behind.
+            </div>
+            <div class="log-entry">
+                <span class="log-timestamp">[LOG 03-7722]</span><br>
+                "If <span class="e13-reference">E13</span> is in danger, I'm going after them. End of discussion."
+                - L14's last recorded statement<br><br>
+                Witnesses report L14 and <span class="e13-reference">E13</span> were inseparable.
+                They shared everything - classes, secrets, dreams.<br><br>
+                <span style="color: #666; font-size: 0.85em; font-style: italic;">
+                    Fragment found: <strong style="color: #ffd700;">open(trials)</strong>
+                </span>
+            </div>
+            <div class="log-entry">
+                <span class="log-timestamp">[LOG 03-7723]</span><br>
+                <span class="critical">CRITICAL:</span> L14 entered Sector 3 attempting to find a way to help <span class="e13-reference">E13</span>.
+                Subject ignored evacuation protocols. Last seen running deeper into the corruption zone.
+                Final transmission: "Tell E13... I'm sorry I couldn't stay..."
+            </div>
+        </div>
+
+        <div class="friendship-log">
+            <h4>💜 FRIENDSHIP RECORDS 💜</h4>
+            <p style="line-height: 2;">
+                <strong>L14 & E13</strong> - Best friends since Day 1.<br>
+                They sat together in every class.<br>
+                They shared notes, laughs, and secrets.<br>
+                When the corruption started spreading, they promised to find each other.<br><br>
+                <span style="color: #aaa;">"No matter what happens... we'll find each other again."</span><br>
+                - Last promise between L14 and E13<br><br>
+                <span style="color: #8b008b;">E13 (Sector 5) still asks about L14.</span><br>
+                <span style="color: #8b008b;">They don't know... yet.</span>
+            </p>
+        </div>
+
+        <div class="data-panel">
+            <h3>Environmental Scan</h3>
+            <div class="data-row">
+                <span class="data-label">Temporal Stability:</span>
+                <span class="data-value critical">CRITICAL FAILURE</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Corruption Level:</span>
+                <span class="data-value critical">97%</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Soul Integrity:</span>
+                <span class="data-value critical">FRAGMENTED</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Loop Status:</span>
+                <span class="data-value critical">ACTIVE</span>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/you-are-not-alone" class="back-link center-link">← Return to Transmission Hub</a>
+        </div>
+    </div>
+
+    <script>
+        // Check if L14 trials are unlocked (using sessionStorage for session-based)
+        function checkTrialsUnlocked() {
+            const trialsUnlocked = sessionStorage.getItem('l14_trials_unlocked');
+            if (trialsUnlocked === 'true') {
+                document.getElementById('trialContainer').classList.add('unlocked');
+            }
+        }
+
+        // Check on page load
+        checkTrialsUnlocked();
+
+        // Debug: Clear localStorage if it exists (migration)
+        if (localStorage.getItem('l14_trials_unlocked') === 'true') {
+            localStorage.removeItem('l14_trials_unlocked');
+            console.log('Cleared old localStorage, use sessionStorage now');
+        }
+
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animation = `float ${Math.random() * 5 + 5}s linear infinite`;
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Add float animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        createParticles();
+
+        // Random purple glow effect
+        setInterval(() => {
+            const header = document.querySelector('.sector-number');
+            header.style.textShadow = `${Math.random() * 10 - 5}px ${Math.random() * 10 - 5}px 30px rgba(139,0,139,0.8)`;
+            setTimeout(() => {
+                header.style.textShadow = '0 0 30px rgba(139,0,139,0.5)';
+            }, 100);
+        }, 3000);
+    </script>
+</body>
+</html>

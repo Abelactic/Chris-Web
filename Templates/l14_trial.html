@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L14'S TRIAL - THE DEATH LOOP</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #000;
+            color: #c9c9c9;
+            min-height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.2),
+                rgba(0, 0, 0, 0.2) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Vignette */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, transparent 0%, transparent 40%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+            z-index: 998;
+        }
+
+        /* Screen flash */
+        .screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 1000;
+            transition: opacity 0.1s;
+        }
+
+        .screen-flash.red {
+            background: #ff0000;
+        }
+
+        /* Glitch overlay */
+        .glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 997;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .glitch-overlay.active {
+            opacity: 1;
+            animation: glitchShake 0.1s infinite;
+        }
+
+        @keyframes glitchShake {
+            0%, 100% { transform: translate(0); }
+            25% { transform: translate(-5px, 5px); }
+            50% { transform: translate(5px, -5px); }
+            75% { transform: translate(-5px, -5px); }
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Phase indicator */
+        .phase-indicator {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'VT323', monospace;
+            font-size: 2em;
+            color: #ff4444;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            z-index: 100;
+            text-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+        }
+
+        /* Loop counter */
+        .loop-counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #666;
+            z-index: 100;
+        }
+
+        .loop-counter span {
+            color: #ff4444;
+        }
+
+        /* Health/Corruption bars */
+        .bars-container {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            z-index: 100;
+        }
+
+        .bar-label {
+            font-family: 'VT323', monospace;
+            font-size: 1em;
+            color: #888;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 20px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 3px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+
+        .bar-container:last-child {
+            margin-bottom: 0;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .corruption-fill {
+            background: linear-gradient(90deg, #8b0000, #ff0000);
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+
+        /* Game area */
+        .game-area {
+            display: none;
+            position: relative;
+            height: 500px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid #333;
+            border-radius: 10px;
+            margin-top: 60px;
+            overflow: hidden;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        /* Player */
+        .player {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: #00ff00;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+            transition: all 0.1s;
+            z-index: 20;
+        }
+
+        /* Corruption */
+        .corruption {
+            position: absolute;
+            background: rgba(255, 0, 0, 0.3);
+            border: 2px solid #ff0000;
+            border-radius: 50%;
+            animation: corruptionPulse 1s infinite;
+        }
+
+        @keyframes corruptionPulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.1); }
+        }
+
+        /* Collectibles */
+        .collectible {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #00ffff;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+            animation: collectibleFloat 2s ease-in-out infinite;
+        }
+
+        @keyframes collectibleFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* Memory fragments */
+        .memory-fragment {
+            position: absolute;
+            padding: 15px 25px;
+            background: rgba(0, 100, 255, 0.2);
+            border: 2px solid #0088ff;
+            border-radius: 10px;
+            color: #88ccff;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .memory-fragment:hover {
+            background: rgba(0, 100, 255, 0.4);
+            box-shadow: 0 0 20px rgba(0, 136, 255, 0.6);
+        }
+
+        .memory-fragment.corrupted {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #ff0000;
+            color: #ff8888;
+        }
+
+        /* Dialogue box */
+        .dialogue-box {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            max-width: 700px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #ff4444;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 200;
+            display: none;
+        }
+
+        .dialogue-box.active {
+            display: block;
+        }
+
+        .dialogue-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #ccc;
+        }
+
+        .dialogue-text .highlight {
+            color: #ff4444;
+        }
+
+        .dialogue-text .l14 {
+            color: #00ff00;
+        }
+
+        /* Start screen */
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .start-title {
+            font-family: 'VT323', monospace;
+            font-size: 4em;
+            color: #ff4444;
+            text-transform: uppercase;
+            letter-spacing: 15px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px rgba(255, 68, 68, 0.8);
+        }
+
+        .start-message {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2em;
+            color: #888;
+            max-width: 600px;
+            line-height: 2;
+            margin-bottom: 40px;
+        }
+
+        .start-btn {
+            font-family: 'VT323', monospace;
+            font-size: 2em;
+            color: #fff;
+            background: linear-gradient(145deg, #8b0000, #5a0000);
+            border: 3px solid #ff4444;
+            padding: 20px 60px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(145deg, #aa0000, #8b0000);
+            box-shadow: 0 0 50px rgba(255, 68, 68, 0.8);
+            transform: scale(1.05);
+        }
+
+        /* Result screen */
+        .result-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 400;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .result-screen.active {
+            display: flex;
+        }
+
+        .result-title {
+            font-family: 'VT323', monospace;
+            font-size: 5em;
+            text-transform: uppercase;
+            letter-spacing: 20px;
+            margin-bottom: 30px;
+        }
+
+        .result-title.success {
+            color: #00ff00;
+            text-shadow: 0 0 50px rgba(0, 255, 0, 0.8);
+        }
+
+        .result-title.fail {
+            color: #ff0000;
+            text-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+        }
+
+        .result-message {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.3em;
+            color: #ccc;
+            max-width: 600px;
+            line-height: 2;
+            margin-bottom: 40px;
+        }
+
+        .retry-btn {
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #fff;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+            border: 3px solid #fff;
+            padding: 15px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+        }
+
+        .retry-btn:hover {
+            background: linear-gradient(145deg, #5a5a5a, #3a3a3a);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+        }
+
+        .leave-btn {
+            font-family: 'VT323', monospace;
+            font-size: 1.5em;
+            color: #888;
+            background: transparent;
+            border: 3px solid #444;
+            padding: 15px 40px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s;
+        }
+
+        .leave-btn:hover {
+            color: #fff;
+            border-color: #666;
+            background: rgba(50, 50, 50, 0.3);
+        }
+
+        /* Instructions */
+        .instructions {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9em;
+            color: #666;
+            z-index: 100;
+            text-align: right;
+        }
+
+        .instructions kbd {
+            background: #222;
+            padding: 3px 8px;
+            border-radius: 3px;
+            border: 1px solid #444;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="screen-flash" id="screenFlash"></div>
+    <div class="glitch-overlay" id="glitchOverlay"></div>
+
+    <div class="phase-indicator" id="phaseIndicator">PHASE 1: THE LOOP</div>
+
+    <div class="loop-counter" id="loopCounter">
+        LOOP: <span id="loopCount">1</span>
+    </div>
+
+    <div class="bars-container">
+        <div class="bar-label">CORRUPTION</div>
+        <div class="bar-container">
+            <div class="bar-fill corruption-fill" id="corruptionBar"></div>
+        </div>
+    </div>
+
+    <div class="instructions">
+        <p><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</p>
+        <p><kbd>SPACE</kbd> Interact</p>
+    </div>
+
+    <div class="container">
+        <div class="game-area" id="gameArea"></div>
+    </div>
+
+    <!-- Dialogue Box -->
+    <div class="dialogue-box" id="dialogueBox">
+        <div class="dialogue-text" id="dialogueText"></div>
+    </div>
+
+    <!-- Start Screen -->
+    <div class="start-screen" id="startScreen">
+        <h1 class="start-title">L14'S DEATH LOOP</h1>
+        <p class="start-message">
+            You are trapped in L14's final moments.<br>
+            Each death teaches you more.<br>
+            Each failure reveals the truth.<br><br>
+            <span class="highlight">Escape the loop. Save their soul.</span>
+        </p>
+        <button class="start-btn" onclick="startGame()">ENTER THE LOOP</button>
+    </div>
+
+    <!-- Result Screen -->
+    <div class="result-screen" id="resultScreen">
+        <h1 class="result-title" id="resultTitle"></h1>
+        <p class="result-message" id="resultMessage"></p>
+        <button class="leave-btn" onclick="wakeHimUp()">💚 WAKE HIM UP</button>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            phase: 1,
+            loop: 1,
+            corruption: 0,
+            playerX: 50,
+            playerY: 50,
+            collected: [],
+            memoriesFound: [],
+            isPlaying: false,
+            corruptionVelocities: [], // Store velocity for each corruption
+            numChasers: 0 // Store number of chasers for phase 3
+        };
+
+        const KEYS = {};
+        let gameLoop = null;
+        let corruptionInterval = null;
+
+        // Phase configurations
+        const PHASES = {
+            1: { name: 'THE LOOP', duration: 30000 },
+            2: { name: 'DECAYING MEMORIES', duration: 30000 },
+            3: { name: 'SOUL FRAGMENTATION', duration: 60000 },
+            4: { name: 'THE FINAL CHOICE', duration: 0 }
+        };
+
+        // Memory fragments (correct and corrupted) - 10 memories, 4 corrupted
+        const MEMORIES = [
+            { id: 1, text: "I heard something in the dark...", correct: true, x: 20, y: 30, vx: 0, vy: 0 },
+            { id: 2, text: "The exit was to the left... I think", correct: true, x: 50, y: 20, vx: 0, vy: 0 },
+            { id: 3, text: "There was a light ahead", correct: true, x: 70, y: 40, vx: 0, vy: 0 },
+            { id: 4, text: "I should turn back", correct: false, x: 30, y: 60, vx: 0, vy: 0 },
+            { id: 5, text: "The corruption was everywhere", correct: true, x: 60, y: 70, vx: 0, vy: 0 },
+            { id: 6, text: "I was alone... or was I?", correct: false, x: 80, y: 50, vx: 0, vy: 0 },
+            { id: 7, text: "Someone was following me...", correct: true, x: 15, y: 50, vx: 0, vy: 0 },
+            { id: 8, text: "The walls were closing in", correct: false, x: 40, y: 80, vx: 0, vy: 0 },
+            { id: 9, text: "I saw a door but couldn't reach it", correct: true, x: 85, y: 15, vx: 0, vy: 0 },
+            { id: 10, text: "It's too late for me", correct: false, x: 10, y: 85, vx: 0, vy: 0 }
+        ];
+
+        // Initialize
+        document.addEventListener('keydown', (e) => KEYS[e.code] = true);
+        document.addEventListener('keyup', (e) => KEYS[e.code] = false);
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            gameState.isPlaying = true;
+            startPhase1();
+        }
+
+        function startPhase1() {
+            gameState.phase = 1;
+            updatePhaseIndicator();
+            
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = '';
+            gameArea.classList.add('active');
+
+            // Create player
+            const player = document.createElement('div');
+            player.className = 'player';
+            player.id = 'player';
+            player.style.left = '50%';
+            player.style.top = '50%';
+            gameArea.appendChild(player);
+
+            // Create 25 corruption zones!
+            for (let i = 0; i < 25; i++) {
+                createCorruption(gameArea);
+            }
+
+            // Start game loop
+            gameLoop = setInterval(updatePhase1, 16);
+
+            // Corruption only increases on contact - no passive spread
+            // Auto-progress to phase 2
+            setTimeout(() => {
+                if (gameState.phase === 1) {
+                    startPhase2();
+                }
+            }, PHASES[1].duration);
+        }
+
+        function updatePhase1() {
+            const player = document.getElementById('player');
+            const gameArea = document.getElementById('gameArea');
+            const speed = 2.5;
+            const corruptionSpeed = 0.8;
+
+            // Movement
+            if (KEYS['KeyW'] || KEYS['ArrowUp']) gameState.playerY = Math.max(0, gameState.playerY - speed);
+            if (KEYS['KeyS'] || KEYS['ArrowDown']) gameState.playerY = Math.min(90, gameState.playerY + speed);
+            if (KEYS['KeyA'] || KEYS['ArrowLeft']) gameState.playerX = Math.max(0, gameState.playerX - speed);
+            if (KEYS['KeyD'] || KEYS['ArrowRight']) gameState.playerX = Math.min(90, gameState.playerX + speed);
+
+            player.style.left = gameState.playerX + '%';
+            player.style.top = gameState.playerY + '%';
+
+            // Move corruption zones MUCH FASTER (7.5 MINIMUM speed!)
+            const corruptions = document.querySelectorAll('.corruption');
+            corruptions.forEach((corp, index) => {
+                let vel = gameState.corruptionVelocities[index];
+                if (!vel) {
+                    // Random speed between 30 and 125
+                    const minSpeed = 124;
+                    const maxSpeed = 125;
+                    const speed = minSpeed + Math.random() * (maxSpeed - minSpeed);
+                    vel = {
+                        x: (Math.random() - 0.5) * 2 * speed,
+                        y: (Math.random() - 0.5) * 2 * speed
+                    };
+                    gameState.corruptionVelocities[index] = vel;
+                }
+
+                let currentX = parseFloat(corp.style.left) || Math.random() * 90;
+                let currentY = parseFloat(corp.style.top) || Math.random() * 90;
+
+                currentX += vel.x;
+                currentY += vel.y;
+
+                if (currentX <= 0 || currentX >= 90) vel.x *= -1;
+                if (currentY <= 0 || currentY >= 90) vel.y *= -1;
+
+                currentX = Math.max(0, Math.min(90, currentX));
+                currentY = Math.max(0, Math.min(90, currentY));
+
+                corp.style.left = currentX + '%';
+                corp.style.top = currentY + '%';
+            });
+
+            // Check collision - MORE corruption on hit (+2% per hit!)
+            corruptions.forEach(corp => {
+                const rect1 = player.getBoundingClientRect();
+                const rect2 = corp.getBoundingClientRect();
+
+                if (rect1.left < rect2.right && rect1.right > rect2.left &&
+                    rect1.top < rect2.bottom && rect1.bottom > rect2.top) {
+                    gameState.corruption += 2;
+                    updateBars();
+
+                    const newX = Math.random() * 80 + 10;
+                    const newY = Math.random() * 80 + 10;
+                    corp.style.left = newX + '%';
+                    corp.style.top = newY + '%';
+
+                    if (gameState.corruption >= 100) {
+                        die();
+                    }
+                }
+            });
+        }
+
+        function createCorruption(container) {
+            const corp = document.createElement('div');
+            corp.className = 'corruption';
+            const size = 60 + Math.random() * 40;
+            corp.style.width = size + 'px';
+            corp.style.height = size + 'px';
+            corp.style.left = Math.random() * 90 + '%';
+            corp.style.top = Math.random() * 90 + '%';
+            container.appendChild(corp);
+            
+            // Store velocity for this corruption
+            gameState.corruptionVelocities.push({
+                x: (Math.random() - 0.5) * 0.5,
+                y: (Math.random() - 0.5) * 0.5
+            });
+        }
+
+        function startPhase2() {
+            clearInterval(gameLoop);
+            clearInterval(corruptionInterval);
+            gameState.phase = 2;
+            updatePhaseIndicator();
+
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = '';
+
+            // Create memory fragments with bouncing velocities
+            MEMORIES.forEach(mem => {
+                if (!gameState.memoriesFound.includes(mem.id)) {
+                    const frag = document.createElement('div');
+                    frag.className = 'memory-fragment' + (mem.correct ? '' : ' corrupted');
+                    frag.textContent = '[MEMORY]';
+                    frag.style.left = mem.x + '%';
+                    frag.style.top = mem.y + '%';
+                    frag.id = 'memory-' + mem.id;
+                    frag.onclick = () => collectMemory(mem);
+                    gameArea.appendChild(frag);
+                    
+                    // Initialize random bouncing velocity for each memory
+                    mem.vx = (Math.random() - 0.5) * 1.5; // Horizontal speed
+                    mem.vy = (Math.random() - 0.5) * 1.5; // Vertical speed
+                }
+            });
+
+            // Show dialogue
+            showDialogue("L14: <span class='l14'>My memories... they're fragmented. Help me remember what really happened...</span>");
+
+            // Start the bouncing game loop for phase 2
+            gameLoop = setInterval(updatePhase2, 16);
+
+            // Corruption only increases on contact - no passive spread
+            setTimeout(() => {
+                if (gameState.phase === 2) {
+                    startPhase3();
+                }
+            }, PHASES[2].duration);
+        }
+
+        function collectMemory(memory) {
+            if (gameState.memoriesFound.includes(memory.id)) return;
+
+            gameState.memoriesFound.push(memory.id);
+
+            const frag = event.target;
+            frag.style.opacity = '0';
+            setTimeout(() => frag.remove(), 300);
+
+            if (memory.correct) {
+                gameState.health = Math.min(100, gameState.health + 10);
+                showDialogue(`Memory recovered: "${memory.text}"`);
+            } else {
+                gameState.corruption += 15;
+                showDialogue(`Corrupted memory: "${memory.text}" <span class='highlight'>+15% Corruption</span>`);
+            }
+
+            updateBars();
+
+            // Check win condition for phase 2 - need all 10 memories now
+            if (gameState.memoriesFound.length >= MEMORIES.length) {
+                setTimeout(startPhase3, 2000);
+            }
+        }
+
+        function updatePhase2() {
+            // Make all memories bounce around the game area
+            MEMORIES.forEach(mem => {
+                if (gameState.memoriesFound.includes(mem.id)) return;
+                
+                const frag = document.getElementById('memory-' + mem.id);
+                if (!frag) return;
+
+                // Update position based on velocity
+                mem.x += mem.vx;
+                mem.y += mem.vy;
+
+                // Bounce off walls
+                if (mem.x <= 0 || mem.x >= 90) {
+                    mem.vx *= -1;
+                    mem.x = Math.max(0, Math.min(90, mem.x));
+                }
+                if (mem.y <= 0 || mem.y >= 90) {
+                    mem.vy *= -1;
+                    mem.y = Math.max(0, Math.min(90, mem.y));
+                }
+
+                // Apply new position
+                frag.style.left = mem.x + '%';
+                frag.style.top = mem.y + '%';
+            });
+        }
+
+        function startPhase3() {
+            clearInterval(gameLoop);
+            clearInterval(corruptionInterval);
+            gameState.phase = 3;
+            updatePhaseIndicator();
+
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = '';
+
+            // Create soul fragments to collect
+            for (let i = 0; i < 5; i++) {
+                const frag = document.createElement('div');
+                frag.className = 'collectible';
+                frag.id = 'soul-' + i;
+                frag.style.left = (20 + Math.random() * 60) + '%';
+                frag.style.top = (20 + Math.random() * 60) + '%';
+                frag.dataset.collected = 'false';
+                gameArea.appendChild(frag);
+            }
+
+            // Create chasing corruption entities
+            gameState.numChasers = 5 + Math.floor(gameState.loop / 2);
+            for (let i = 0; i < gameState.numChasers; i++) {
+                createChaser(gameArea, i);
+            }
+
+            // Create stationary corruption zones (3 random zones)
+            for (let i = 0; i < 3; i++) {
+                createStaticCorruption(gameArea, i);
+            }
+
+            // Reset player position
+            gameState.playerX = 50;
+            gameState.playerY = 50;
+
+            const player = document.createElement('div');
+            player.className = 'player';
+            player.id = 'player';
+            player.style.left = '50%';
+            player.style.top = '50%';
+            gameArea.appendChild(player);
+
+            gameLoop = setInterval(updatePhase3, 16);
+
+            // Corruption only increases on contact - no passive spread
+
+            showDialogue("L14: <span class='l14'>My soul... it's shattered. Collect the pieces before the corruption takes them!</span>");
+        }
+
+        function createChaser(container, index) {
+            const chaser = document.createElement('div');
+            chaser.className = 'corruption';
+            chaser.id = 'chaser-' + index;
+            chaser.style.width = '50px';
+            chaser.style.height = '50px';
+            chaser.style.left = (Math.random() * 90) + '%';
+            chaser.style.top = (Math.random() * 90) + '%';
+            container.appendChild(chaser);
+        }
+
+        function createStaticCorruption(container, index) {
+            const staticCorp = document.createElement('div');
+            staticCorp.className = 'corruption';
+            staticCorp.id = 'static-corruption-' + index;
+            staticCorp.style.width = '80px';
+            staticCorp.style.height = '80px';
+            staticCorp.style.left = (10 + Math.random() * 80) + '%';
+            staticCorp.style.top = (10 + Math.random() * 80) + '%';
+            staticCorp.style.opacity = '0.5';
+            container.appendChild(staticCorp);
+        }
+
+        function updatePhase3() {
+            const player = document.getElementById('player');
+            const gameArea = document.getElementById('gameArea');
+            const speed = 2.5; // Player speed
+
+            // Track if player is moving
+            let isMoving = false;
+
+            // Movement
+            if (KEYS['KeyW'] || KEYS['ArrowUp']) {
+                gameState.playerY = Math.max(0, gameState.playerY - speed);
+                isMoving = true;
+            }
+            if (KEYS['KeyS'] || KEYS['ArrowDown']) {
+                gameState.playerY = Math.min(90, gameState.playerY + speed);
+                isMoving = true;
+            }
+            if (KEYS['KeyA'] || KEYS['ArrowLeft']) {
+                gameState.playerX = Math.max(0, gameState.playerX - speed);
+                isMoving = true;
+            }
+            if (KEYS['KeyD'] || KEYS['ArrowRight']) {
+                gameState.playerX = Math.min(90, gameState.playerX + speed);
+                isMoving = true;
+            }
+
+            player.style.left = gameState.playerX + '%';
+            player.style.top = gameState.playerY + '%';
+
+            // Chasers ONLY move when player moves!
+            if (isMoving) {
+                for (let i = 0; i < gameState.numChasers; i++) {
+                    const chaser = document.getElementById('chaser-' + i);
+                    if (chaser) {
+                        const chaserX = parseFloat(chaser.style.left);
+                        const chaserY = parseFloat(chaser.style.top);
+
+                        // Move towards player - speed 0.8 (slow but steady)
+                        const dx = gameState.playerX - chaserX;
+                        const dy = gameState.playerY - chaserY;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+
+                        if (dist > 0) {
+                            chaser.style.left = (chaserX + dx / dist * 0.8) + '%';
+                            chaser.style.top = (chaserY + dy / dist * 0.8) + '%';
+                        }
+
+                        // Collision - reduced damage
+                        if (dist < 5) {
+                            gameState.corruption += 1; // +1% corruption per hit
+                            updateBars();
+                            if (gameState.corruption >= 100) die();
+                        }
+                    }
+                }
+            }
+
+            // Check stationary corruption zones collision
+            for (let i = 0; i < 3; i++) {
+                const staticCorp = document.getElementById('static-corruption-' + i);
+                if (staticCorp) {
+                    const corpX = parseFloat(staticCorp.style.left);
+                    const corpY = parseFloat(staticCorp.style.top);
+                    const dist = Math.sqrt(
+                        Math.pow(gameState.playerX - corpX, 2) +
+                        Math.pow(gameState.playerY - corpY, 2)
+                    );
+
+                    if (dist < 8) {
+                        gameState.corruption += 3; // +3% corruption for static zones
+                        updateBars();
+                        if (gameState.corruption >= 100) die();
+                    }
+                }
+            }
+
+            // Check soul fragment collection
+            for (let i = 0; i < 5; i++) {
+                const frag = document.getElementById('soul-' + i);
+                if (frag && frag.dataset.collected === 'false') {
+                    const fragX = parseFloat(frag.style.left);
+                    const fragY = parseFloat(frag.style.top);
+                    const dist = Math.sqrt(
+                        Math.pow(gameState.playerX - fragX, 2) + 
+                        Math.pow(gameState.playerY - fragY, 2)
+                    );
+
+                    if (dist < 5) {
+                        frag.dataset.collected = 'true';
+                        frag.style.display = 'none';
+                        gameState.collected.push(i);
+                        gameState.health = Math.min(100, gameState.health + 5);
+                        updateBars();
+
+                        if (gameState.collected.length >= 5) {
+                            setTimeout(startPhase4, 1000);
+                        }
+                    }
+                }
+            }
+        }
+
+        function startPhase4() {
+            clearInterval(gameLoop);
+            clearInterval(corruptionInterval);
+            gameState.phase = 4;
+            updatePhaseIndicator();
+
+            document.getElementById('gameArea').innerHTML = '';
+
+            // Final choice - TWO BUTTONS
+            showDialogue(`
+                L14: <span class='l14'>You've seen my memories. You know what happened.</span><br><br>
+                The corruption didn't just happen... <span class='highlight'>I let it in.</span><br><br>
+                To save me, you must make a choice:<br><br>
+            `, true);
+
+            // Add the two choice buttons to the dialogue box
+            const dialogueBox = document.getElementById('dialogueBox');
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.cssText = 'margin-top: 20px; display: flex; gap: 15px; justify-content: center;';
+            
+            const sacrificeBtn = document.createElement('button');
+            sacrificeBtn.textContent = '💚 SACRIFICE SOUL';
+            sacrificeBtn.style.cssText = 'padding: 15px 30px; font-family: "VT323", monospace; font-size: 1.3em; background: linear-gradient(145deg, #00aa00, #008800); color: #fff; border: 2px solid #00ff00; border-radius: 8px; cursor: pointer; letter-spacing: 2px;';
+            sacrificeBtn.onclick = () => sacrificeChoice();
+            
+            const leaveBtn = document.createElement('button');
+            leaveBtn.textContent = '🚪 LEAVE';
+            leaveBtn.style.cssText = 'padding: 15px 30px; font-family: "VT323", monospace; font-size: 1.3em; background: linear-gradient(145deg, #5a5a5a, #3a3a3a); color: #888; border: 2px solid #666; border-radius: 8px; cursor: pointer; letter-spacing: 2px;';
+            leaveBtn.onclick = () => leaveChoice();
+            
+            buttonContainer.appendChild(sacrificeBtn);
+            buttonContainer.appendChild(leaveBtn);
+            dialogueBox.appendChild(buttonContainer);
+        }
+
+        function sacrificeChoice() {
+            // Player chooses to sacrifice - TRUE ENDING
+            winGame();
+        }
+
+        function leaveChoice() {
+            // Player chooses to leave - L14 stays in the loop
+            loseGameByChoice();
+        }
+
+        function die() {
+            gameState.isPlaying = false;
+            clearInterval(gameLoop);
+
+            // Red flash
+            const flash = document.getElementById('screenFlash');
+            flash.classList.add('red');
+            setTimeout(() => flash.classList.remove('red'), 200);
+
+            // Glitch
+            document.getElementById('glitchOverlay').classList.add('active');
+            setTimeout(() => document.getElementById('glitchOverlay').classList.remove('active'), 500);
+
+            // Increment loop
+            gameState.loop++;
+
+            // Reset for new loop
+            gameState.corruption = 0;
+            gameState.collected = [];
+            gameState.memoriesFound = []; // Reset memories so they respawn
+
+            // Update display
+            document.getElementById('loopCount').textContent = gameState.loop;
+            updateBars();
+
+            // Show death message
+            const messages = [
+                "The corruption consumed you...",
+                "L14's death repeats...",
+                "The loop continues...",
+                "You couldn't escape in time...",
+                "Their memories fade..."
+            ];
+            showDialogue(messages[Math.floor(Math.random() * messages.length)]);
+
+            setTimeout(() => {
+                startPhase1();
+            }, 2000);
+        }
+
+        function winGame() {
+            gameState.isPlaying = false;
+            clearInterval(gameLoop);
+            clearInterval(corruptionInterval);
+
+            document.getElementById('resultTitle').textContent = 'LIBERATED';
+            document.getElementById('resultTitle').className = 'result-title success';
+            document.getElementById('resultMessage').innerHTML = `
+                You broke the cycle.<br>
+                L14's soul is finally at peace.<br><br>
+                <span style="color: #00ff00;">💚 L14'S SOUL FRAGMENT COLLECTED</span><br><br>
+                Loops endured: ${gameState.loop}<br><br>
+                <span style="color: #ffd43b; font-size: 1.1em;">⚠ NEW TRIAL UNLOCKED ⚠</span><br>
+                <span style="color: #888;">E13's Trial is now accessible.</span><br>
+                <span style="color: #00ff00; font-family: 'Share Tech Mono';">CODE: send(rescue)</span>
+            `;
+            document.getElementById('resultScreen').classList.add('active');
+
+            // Add to inventory
+            fetch('/add_item', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({item: '💚 L14\'s Soul Fragment'})
+            });
+
+            // Unlock E13's Trial in sessionStorage
+            sessionStorage.setItem('e13_trial_unlocked', 'true');
+        }
+
+        function loseGame() {
+            gameState.isPlaying = false;
+            clearInterval(gameLoop);
+            clearInterval(corruptionInterval);
+
+            document.getElementById('resultTitle').textContent = 'TRAPPED';
+            document.getElementById('resultTitle').className = 'result-title fail';
+            document.getElementById('resultMessage').innerHTML = `
+                L14 remains in the loop.<br>
+                Their corruption is complete.<br><br>
+                Loops endured: ${gameState.loop}
+            `;
+            document.getElementById('resultScreen').classList.add('active');
+        }
+
+        function loseGameByChoice() {
+            gameState.isPlaying = false;
+            clearInterval(gameLoop);
+            clearInterval(corruptionInterval);
+
+            document.getElementById('resultTitle').textContent = 'LEFT BEHIND';
+            document.getElementById('resultTitle').className = 'result-title fail';
+            document.getElementById('resultMessage').innerHTML = `
+                You chose to leave.<br>
+                L14 remains trapped in the loop.<br>
+                Their final transmission fades...<br><br>
+                <span style="color: #666;">"Tell E13... I tried..."</span><br><br>
+                Loops endured: ${gameState.loop}
+            `;
+            document.getElementById('resultScreen').classList.add('active');
+        }
+
+        function retryGame() {
+            document.getElementById('resultScreen').classList.remove('active');
+            gameState = {
+                phase: 1,
+                loop: 1,
+                corruption: 0,
+                playerX: 50,
+                playerY: 50,
+                collected: [],
+                memoriesFound: [],
+                isPlaying: true
+            };
+            document.getElementById('loopCount').textContent = '1';
+            updateBars();
+            startPhase1();
+        }
+
+        function wakeHimUp() {
+            window.location.href = '/sector-3';
+        }
+
+        function leaveTrial() {
+            window.location.href = '/sector-3';
+        }
+
+        function updatePhaseIndicator() {
+            document.getElementById('phaseIndicator').textContent = 
+                `PHASE ${gameState.phase}: ${PHASES[gameState.phase].name}`;
+        }
+
+        function updateBars() {
+            document.getElementById('corruptionBar').style.width = gameState.corruption + '%';
+        }
+
+        function showDialogue(text, persist = false) {
+            const box = document.getElementById('dialogueBox');
+            const textEl = document.getElementById('dialogueText');
+            textEl.innerHTML = text;
+            box.classList.add('active');
+
+            if (!persist) {
+                setTimeout(() => box.classList.remove('active'), 4000);
+            }
+        }
+    </script>
+</body>
+</html>

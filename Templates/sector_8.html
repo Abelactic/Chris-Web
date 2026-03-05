@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector 8 - THE TEACHER</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #8b8b8b;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* Red/Purple tint for Sector 8 - THE TEACHER */
+        .sector-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(139,0,139,0.15) 0%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sector-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .sector-number {
+            font-family: 'VT323', monospace;
+            font-size: 6em;
+            color: #8b008b;
+            text-transform: uppercase;
+            letter-spacing: 20px;
+            text-shadow: 0 0 30px rgba(139,0,139,0.5);
+            animation: pulse-purple 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-purple {
+            0%, 100% { text-shadow: 0 0 30px rgba(139,0,139,0.5); opacity: 1; }
+            50% { text-shadow: 0 0 50px rgba(139,0,139,0.8); opacity: 0.8; }
+        }
+
+        .sector-status {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5em;
+            color: #8b008b;
+            letter-spacing: 10px;
+            margin-top: 10px;
+        }
+
+        .data-panel {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid #333;
+            border-left: 3px solid #8b008b;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .data-panel h3 {
+            font-family: 'VT323', monospace;
+            color: #666;
+            font-size: 1.4em;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.95em;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .data-value {
+            color: #888;
+        }
+
+        .data-value.special {
+            color: #8b008b;
+        }
+
+        .data-value.danger {
+            color: #ff0000;
+        }
+
+        .log-entry {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 2px solid #8b008b;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .log-timestamp {
+            color: #8b008b;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: rgba(139, 0, 139, 0.1);
+            border: 1px solid #8b008b;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .warning-box p {
+            color: #8b008b;
+            font-size: 1.1em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .subject-info {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .subject-avatar {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #8b008b;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            background: rgba(139, 0, 139, 0.1);
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { box-shadow: 0 0 20px rgba(139,0,139,0.3); }
+            50% { box-shadow: 0 0 40px rgba(139,0,139,0.6); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            color: #666;
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 15px 40px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #8b008b;
+            border-color: #8b008b;
+            background: rgba(139, 0, 139, 0.1);
+        }
+
+        .center-link {
+            display: block;
+            text-align: center;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: rgba(139, 0, 139, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .teacher-chamber {
+            background: rgba(139, 0, 139, 0.05);
+            border: 2px solid #8b008b;
+            padding: 25px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .teacher-chamber h3 {
+            font-family: 'VT323', monospace;
+            color: #8b008b;
+            font-size: 1.8em;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+        }
+
+        .teacher-chamber p {
+            color: #aaa;
+            line-height: 2;
+            font-size: 1em;
+        }
+
+        .confession {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #8b008b;
+            padding: 20px;
+            margin: 25px 0;
+            font-style: italic;
+            color: #cc88cc;
+            border-radius: 8px;
+        }
+
+        .experiment-log {
+            background: rgba(139, 0, 139, 0.1);
+            border-left: 4px solid #8b008b;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .experiment-log h4 {
+            font-family: 'VT323', monospace;
+            color: #8b008b;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .threat-indicator {
+            display: inline-block;
+            padding: 8px 20px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            animation: threatPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes threatPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(255,0,0,0.3); }
+            50% { box-shadow: 0 0 25px rgba(255,0,0,0.6); }
+        }
+    </style>
+</head>
+<body>
+    <div class="sector-overlay"></div>
+
+    <div class="container">
+        <div class="sector-header">
+            <h1 class="sector-number">SECTOR 8</h1>
+            <div class="sector-status">👁️ THE TEACHER'S CHAMBER 👁️</div>
+        </div>
+
+        <div class="subject-info">
+            <div class="subject-avatar">🧑‍🏫</div>
+            <h2 style="font-family: 'VT323'; color: #666; letter-spacing: 5px; font-size: 2em;">SUBJECT A29</h2>
+            <p style="color: #8b008b; font-size: 0.9em;">THE TEACHER - Searching for his lost students</p>
+        </div>
+
+        <div class="warning-box">
+            <p>⚠ WARNING: PSYCHIC RESONANCE DETECTED ⚠</p>
+            <div style="margin-top: 15px;">
+                <span class="threat-indicator">SUBJECT: TEACHER</span>
+            </div>
+            <p style="font-size: 0.8em; margin-top: 10px; color: #666;">
+                A29 is not hostile. He is searching for his lost students.
+            </p>
+        </div>
+
+        <div class="data-panel">
+            <h3>Sector Data</h3>
+            <div class="data-row">
+                <span class="data-label">Access Code:</span>
+                <span class="data-value special">8A-0029-TEACHER</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Subject:</span>
+                <span class="data-value special">A29 - THE TEACHER</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Status:</span>
+                <span class="data-value special">ALIVE - SEARCHING</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Mission:</span>
+                <span class="data-value special">FIND LOST STUDENTS</span>
+            </div>
+        </div>
+
+        <div class="teacher-chamber">
+            <h3>🗝️ THE TEACHER'S SANCTUM 🗝️</h3>
+            <p>
+                You stand before A29 - a teacher who entered this nightmare<br>
+                not as a creator, but as a searcher.<br>
+                His students went missing one by one.<br>
+                He followed them into the sectors.<br>
+                Now he's trapped here, searching endlessly...<br><br>
+                <strong style="color: #8b008b;">"I came to save them. Now I'm one of them."</strong>
+            </p>
+
+            <div class="confession">
+                "I'm just a teacher...<br>
+                My students started disappearing. First C13, then the others.<br>
+                I followed their trail into this... place.<br>
+                The sectors, the entities, the Gateway - I didn't create any of it.<br>
+                I'm just trying to find my students.<br>
+                To bring them home.<br><br>
+                But I've been here so long...<br>
+                I've seen what happens to those who stay too long.<br>
+                The corruption... it gets into you.<br><br>
+                <strong style="color: #fff;">If you find them... tell them their teacher is still looking.</strong><br>
+                Tell them... I never gave up."
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>Teacher's Search Logs</h3>
+            <div class="experiment-log">
+                <h4>📓 Search Log - Day 1</h4>
+                <p>
+                    "C13 missed class today. First time they've ever been absent.
+                    Their desk sits empty. Something feels wrong.
+                    I asked the other students if they'd seen them.
+                    E13 said C13 mentioned 'a secret project.'
+                    I need to find out what this is about."
+                </p>
+            </div>
+            <div class="experiment-log">
+                <h4>📓 Search Log - Day 14</h4>
+                <p>
+                    "More students missing. L14, D14, S14... all gone.
+                    I found strange symbols in the school basement.
+                    They led me here. To these sectors.
+                    The air hums with something unnatural.
+                    But I won't turn back. Not while they're still out there."
+                </p>
+            </div>
+            <div class="experiment-log">
+                <h4>📓 Search Log - Day 47</h4>
+                <p>
+                    "I've found traces of them. F13's code scattered in Sector 9.
+                    D14's graffiti in Sector 2. L14's whispers in Sector 3.
+                    They're here... but they're changed.
+                    Something has touched them. Corrupted them.
+                    I need to find a way to bring them back."
+                </p>
+            </div>
+            <div class="experiment-log">
+                <h4>📓 Search Log - Day ???</h4>
+                <p>
+                    "I don't know how long I've been here.
+                    Time doesn't work the same in these sectors.
+                    I've contained myself in Sector 8 to stay close to the students.
+                    I can feel them... somewhere... still alive...
+                    <span style="color: #0f0;">To whoever finds this: Don't give up on them.
+                    They're not monsters. They're victims.
+                    And I'm still their teacher. That doesn't end.</span>"
+                </p>
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>Psychic Readings</h3>
+            <div class="data-row">
+                <span class="data-label">Mental State:</span>
+                <span class="data-value">DETERMINED</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Connection to Students:</span>
+                <span class="data-value special">STRONG LINK</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Corruption Level:</span>
+                <span class="data-value">MINIMAL - RESISTING</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Hope Level:</span>
+                <span class="data-value special">UNBREAKABLE</span>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/you-are-not-alone" class="back-link center-link">← Return to Transmission Hub</a>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animation = `float ${Math.random() * 5 + 5}s linear infinite`;
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Add float animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        createParticles();
+
+        // Random purple glow effect
+        setInterval(() => {
+            const header = document.querySelector('.sector-number');
+            header.style.textShadow = `${Math.random() * 10 - 5}px ${Math.random() * 10 - 5}px 30px rgba(139,0,139,0.8)`;
+            setTimeout(() => {
+                header.style.textShadow = '0 0 30px rgba(139,0,139,0.5)';
+            }, 100);
+        }, 3000);
+
+        // Random whisper sound effect (visual only)
+        setInterval(() => {
+            const warningBox = document.querySelector('.warning-box p');
+            warningBox.style.opacity = '0.7';
+            setTimeout(() => {
+                warningBox.style.opacity = '1';
+            }, 200);
+        }, 4000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sector 1 - THE ORIGIN</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: #0a0a0a;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #8b8b8b;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* CRT Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        /* White/Gold tint for Sector 1 - THE ORIGIN */
+        .sector-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255,215,0,0.08) 0%, rgba(0,0,0,0.9) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .sector-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .sector-number {
+            font-family: 'VT323', monospace;
+            font-size: 6em;
+            color: #ffd700;
+            text-transform: uppercase;
+            letter-spacing: 20px;
+            text-shadow: 0 0 30px rgba(255,215,0,0.5);
+            animation: pulse-gold 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { text-shadow: 0 0 30px rgba(255,215,0,0.5); opacity: 1; }
+            50% { text-shadow: 0 0 50px rgba(255,215,0,0.8); opacity: 0.8; }
+        }
+
+        .sector-status {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5em;
+            color: #ffd700;
+            letter-spacing: 10px;
+            margin-top: 10px;
+        }
+
+        .data-panel {
+            background: rgba(10, 10, 10, 0.9);
+            border: 1px solid #333;
+            border-left: 3px solid #ffd700;
+            padding: 25px;
+            margin: 30px 0;
+        }
+
+        .data-panel h3 {
+            font-family: 'VT323', monospace;
+            color: #666;
+            font-size: 1.4em;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.95em;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: #555;
+            letter-spacing: 1px;
+        }
+
+        .data-value {
+            color: #888;
+        }
+
+        .data-value.special {
+            color: #ffd700;
+        }
+
+        .log-entry {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 2px solid #ffd700;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .log-timestamp {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        .warning-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #ffd700;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .warning-box p {
+            color: #ffd700;
+            font-size: 1.1em;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .subject-info {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .subject-avatar {
+            width: 150px;
+            height: 150px;
+            border: 2px solid #ffd700;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            background: rgba(255, 215, 0, 0.1);
+            animation: breathe 3s ease-in-out infinite;
+        }
+
+        @keyframes breathe {
+            0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+            50% { box-shadow: 0 0 40px rgba(255,215,0,0.6); }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 40px;
+            color: #666;
+            text-decoration: none;
+            font-family: 'VT323', monospace;
+            font-size: 1.2em;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            padding: 15px 40px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            color: #ffd700;
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .center-link {
+            display: block;
+            text-align: center;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: fixed;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 215, 0, 0.5);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .origin-secret {
+            background: rgba(255, 215, 0, 0.05);
+            border: 1px solid #ffd700;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .origin-secret h3 {
+            font-family: 'VT323', monospace;
+            color: #ffd700;
+            font-size: 1.6em;
+            letter-spacing: 5px;
+            margin-bottom: 15px;
+        }
+
+        .origin-secret p {
+            color: #aaa;
+            line-height: 1.8;
+        }
+
+        .dual-subject {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .subject-card {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #ffd700;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .subject-card h4 {
+            font-family: 'VT323', monospace;
+            color: #ffd700;
+            font-size: 1.8em;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
+
+        .subject-card .status {
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .subject-card .status.alive {
+            color: #0f0;
+        }
+
+        .subject-card .status.unknown {
+            color: #ffd700;
+        }
+    </style>
+</head>
+<body>
+    <div class="sector-overlay"></div>
+
+    <div class="container">
+        <div class="sector-header">
+            <h1 class="sector-number">SECTOR 1</h1>
+            <div class="sector-status">⚠ THE ORIGIN ⚠</div>
+        </div>
+
+        <div class="subject-info">
+            <div class="subject-avatar">🟨</div>
+            <h2 style="font-family: 'VT323'; color: #666; letter-spacing: 5px; font-size: 2em;">SUBJECT C13</h2>
+            <p style="color: #ffd700; font-size: 0.9em;">The First Subject - Present Since Activation</p>
+        </div>
+
+        <div class="warning-box">
+            <p>⚠ GROUND ZERO - ALL SECTORS ORIGINATE HERE ⚠</p>
+            <p style="font-size: 0.8em; margin-top: 10px; color: #666;">The truth you seek lies within...</p>
+        </div>
+
+        <div class="data-panel">
+            <h3>Sector Data</h3>
+            <div class="data-row">
+                <span class="data-label">Access Code (C13):</span>
+                <span class="data-value special">1C-0013-UNKNOWN</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Status:</span>
+                <span class="data-value special">CLASSIFIED</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Origin Point:</span>
+                <span class="data-value special">CONFIRMED</span>
+            </div>
+        </div>
+
+        <div class="origin-secret">
+            <h3>📓 C13'S PERSONAL BLOG 📓</h3>
+            <p style="color: #888; font-size: 0.9em; margin-bottom: 20px;">
+                <em>"Entries recovered from Sector 1 - C13's personal logs"</em>
+            </p>
+        </div>
+
+        <div class="data-panel">
+            <h3>📝 Entry 1 - The Beginning</h3>
+            <div class="log-entry">
+                <span class="log-timestamp">[DATE UNKNOWN]</span><br>
+                My name is C13. I don't remember my real name anymore.<br><br>
+                It started with a rumor. Someone said there was a secret project 
+                at school. Something called "The Gateway." They said it could 
+                show you things... things beyond understanding.<br><br>
+                I was curious. Stupidly curious. The teacher noticed. 
+                Always watching, always asking questions.<br><br>
+                I volunteered. I thought it would be an adventure.<br><br>
+                <span style="color: #666; font-size: 0.85em; font-style: italic;">
+                    Fragment found: <strong style="color: #ffd700;">"Las"</strong>
+                </span>
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>📝 Entry 2 - The Gateway</h3>
+            <div class="log-entry">
+                <span class="log-timestamp">[DATE UNKNOWN]</span><br>
+                I found it. The Gateway.<br><br>
+                It wasn't what I expected. Not a door, not a machine... 
+                more like a <em>presence</em>. It spoke to me. Not with words, 
+                but with... feelings. Promises.<br><br>
+                It showed me what I could become. Power beyond imagination. 
+                Knowledge that would make me more than human.<br><br>
+                All I had to do was step through.
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>📝 Entry 3 - The Deal</h3>
+            <div class="log-entry" style="border-left-color: #ff0000;">
+                <span class="log-timestamp" style="color: #ff0000;">[CORRUPTION BEGINNING]</span><br>
+                I made the deal.<br><br>
+                The Gateway promised me everything. In exchange... it just 
+                wanted access. A way in. A vessel.<br><br>
+                I thought I could control it. I thought I was smart enough.<br><br>
+                <span style="color: #ff6666;">I was wrong.</span><br><br>
+                It's inside me now. I can feel it. Learning. Growing. 
+                Waiting.
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>📝 Entry 4 - The Transformation</h3>
+            <div class="log-entry" style="border-left-color: #ff0000;">
+                <span class="log-timestamp" style="color: #ff0000;">[MEMORY FRAGMENTED]</span><br>
+                The other students... they started disappearing.<br><br>
+                D14 got aggressive. L14 started hearing voices. 
+                S14... time doesn't work right for them anymore.<br><br>
+                F13's technology keeps corrupting. E13 tries to help everyone.<br><br>
+                And me? I'm... different. The Gateway changed me.<br>
+                My memories are slipping away. Pieces of who I was 
+                are being replaced by... something else.<br><br>
+                <span style="color: #ff6666;">But I'm gaining power. Real power.</span>
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>📝 Entry 5 - New Goals</h3>
+            <div class="log-entry" style="border-left-color: #ffd700;">
+                <span class="log-timestamp" style="color: #ffd700;">[CURRENT OBJECTIVE]</span><br>
+                I've accepted my fate. The old C13 is gone.<br><br>
+                But that's okay. Because now I understand something the others don't.<br><br>
+                Society... it's a cage. Rules, expectations, normalcy.<br>
+                I never fit in. Never wanted to.<br><br>
+                The Gateway didn't corrupt me. It <em>freed</em> me.<br><br>
+                <strong style="color: #ffd700;">MY NEW PATH:</strong><br>
+                • Live beyond society's limits<br>
+                • Exist between worlds - neither human nor monster<br>
+                • Watch over the others - not control, just... guide<br>
+                • Keep the Gateway from consuming everything<br><br>
+                The teacher thinks he's saving victims.<br>
+                D14 thinks rebellion means breaking rules.<br>
+                They don't understand.<br><br>
+                True freedom isn't breaking the rules.<br>
+                It's existing where rules don't apply.<br><br>
+                <span style="color: #ffd700; font-size: 1.1em;">I'm not their enemy. I'm not their savior.</span><br>
+                <span style="color: #ffd700; font-size: 1.1em;">I'm just... beyond.</span>
+            </div>
+        </div>
+
+        <div class="data-panel">
+            <h3>Subject Data</h3>
+            <div class="subject-card" style="max-width: 400px; margin: 0 auto;">
+                <h4>C13</h4>
+                <div class="status unknown">STATUS: UNKNOWN</div>
+                <p style="color: #888; font-size: 0.85em; line-height: 1.6;">
+                    Present since activation.<br>
+                    Memory: Fragmented<br>
+                    Location: Sector 1 (Origin)<br>
+                    Threat Level: Uncertain
+                </p>
+            </div>
+        </div>
+
+        <div class="data-panel" style="border-left-color: #ff0000;">
+            <h3 style="color: #ff0000;">⚠️ THE TRUTH ⚠️</h3>
+            <div class="log-entry" style="border-left-color: #ff0000;">
+                <span class="log-timestamp" style="color: #ff0000;">[ASSESSMENT]</span><br>
+                C13 cannot be classified as friend or foe.<br><br>
+                Unlike D14 who rebelled against authority,<br>
+                C13 rebelled against <em>existence itself</em>.<br><br>
+                The Gateway offered an escape from being human.<br>
+                C13 accepted.<br><br>
+                <span style="color: #fff;">Not good. Not evil. Just... different.</span><br><br>
+                He watches. He waits. He protects in his own way.<br>
+                But whether he protects <em>us</em> or the Gateway...<br><br>
+                <span style="color: #ff6666;">Even he may not know.</span>
+            </div>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/you-are-not-alone" class="back-link center-link">← Return to Transmission Hub</a>
+        </div>
+    </div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animation = `float ${Math.random() * 5 + 5}s linear infinite`;
+                document.body.appendChild(particle);
+            }
+        }
+
+        // Add float animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+                10% { opacity: 1; }
+                90% { opacity: 1; }
+                100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        createParticles();
+
+        // Random golden glow effect
+        setInterval(() => {
+            const header = document.querySelector('.sector-number');
+            header.style.textShadow = `${Math.random() * 10 - 5}px ${Math.random() * 10 - 5}px 30px rgba(255,215,0,0.8)`;
+            setTimeout(() => {
+                header.style.textShadow = '0 0 30px rgba(255,215,0,0.5)';
+            }, 100);
+        }, 3000);
+    </script>
+</body>
+</html>
